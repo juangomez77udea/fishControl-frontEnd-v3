@@ -3,8 +3,9 @@ import { RiMailLine, RiLockPasswordLine, RiEyeLine, RiEyeOffLine } from "react-i
 import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../../api";
+
 const Login = () => {
-    // Estados con tipos explícitos
+
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [username, setUsername] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -37,7 +38,7 @@ const Login = () => {
             if (response && response.token) {
                 localStorage.setItem("token", response.token);
                 toast.success("Inicio de sesión exitoso", { theme: "dark" });
-                navigate("/menu");
+                navigate("/insumos");
             } else {
                 toast.error("Credenciales inválidas", { theme: "dark" });
             }

@@ -10,14 +10,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^6.4.7",
+    "@mui/styled-engine-sc": "^6.4.6",
+    "@mui/x-data-grid": "^7.27.2",
     "@tailwindcss/vite": "^4.0.9",
     "axios": "^1.8.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-hook-form": "^7.54.2",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.2.0",
     "react-toastify": "^11.0.5",
-    "tailwindcss": "^4.0.9"
+    "styled-components": "^6.1.15",
+    "tailwindcss": "^4.0.9",
+    "uuid": "^11.1.0",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
@@ -31,5 +40,9 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
   }
 }
