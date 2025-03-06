@@ -1,30 +1,43 @@
-import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import Header from '../../pages/Header/Header';
+import { type FC, type ReactNode, useState, useEffect, useCallback } from "react"
+import Header from "../components/header/Header"
+import { useNavigate } from "react-router-dom"
 
-/*interface MenuLayoutProps {
-  // Puedes añadir props si es necesario
-}*/
+type MenuLayoutProps = {
+  children: ReactNode
+}
 
-const MenuLayout: React.FC<MenuLayoutProps> = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+const MenuLayout: FC<MenuLayoutProps> = ({ children }) => {
+  const [isMounted, setIsMounted] = useState(false)
+  const navigate = useNavigate()
 
-  const toggleSidebar = (): void => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  useEffect(() => {
+    // Verificar si el usuario está autenticado al montar el componente
+    const token = localStorage.getItem("token")
+    if (!token) {
+      navigate("/")
+    } else {
+      setIsMounted(true)
+    }
+  }, [navigate])
+
+  const handleLogout = useCallback(() => {
+    // Eliminar el token del localStorage
+    localStorage.removeItem("token")
+    // Redirigir al login
+    navigate("/")
+  }, [navigate])
+
+  if (!isMounted) {
+    return null
+  }
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header toggleSidebar={toggleSidebar} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200 mt-16">
-          <div className="container mx-auto px-6 py-8">
-            <Outlet />
-          </div>
-        </main>
-      </div>
+    <div className="flex flex-col min-h-screen">
+      <Header onLogout={handleLogout} />
+      <main className="flex-1 p-4">{children}</main>
     </div>
-  );
-};
+  )
+}
 
-export default MenuLayout;
+export default MenuLayout
+

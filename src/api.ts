@@ -3,13 +3,12 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 const API_URL: string = "http://localhost:8080/api";
 
 interface LoginResponse {
-  // Define aquí la estructura de la respuesta del login
-  // Por ejemplo:
+
   token: string;
   user: {
     id: number;
     username: string;
-    // ... otros campos del usuario
+    
   };
 }
 
