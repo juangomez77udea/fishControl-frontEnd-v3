@@ -1,17 +1,25 @@
-import type React from "react";
-import { useEffect } from "react";
-import { useInsumoStore } from "../../store/useInsumoStore";
-import InsumoTable from "../../components/insumo/InsumoTable";
-import InsumoModal from "../../components/insumo/InsumoModal";
-import AddInsumoButton from "../../components/insumo/AddInsumoButton";
+import type React from "react"
+import { useEffect } from "react"
+import { useInsumoStore } from "../../store/useInsumoStore"
+import InsumoTable from "../../components/insumo/InsumoTable"
+import InsumoModal from "../../components/insumo/InsumoModal"
+import AddInsumoButton from "../../components/insumo/AddInsumoButton"
+import { toast } from "react-toastify"
 
 const Insumos: React.FC = () => {
-  const { fetchInsumos, isLoading } = useInsumoStore();
+  const { fetchInsumos, isLoading, error } = useInsumoStore()
 
   // Cargar los insumos al montar el componente
   useEffect(() => {
-    fetchInsumos();
-  }, [fetchInsumos]);
+    fetchInsumos()
+  }, [fetchInsumos])
+
+  // Mostrar errores si ocurren
+  useEffect(() => {
+    if (error) {
+      toast.error(error)
+    }
+  }, [error])
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
@@ -33,7 +41,7 @@ const Insumos: React.FC = () => {
       <InsumoModal />
       <AddInsumoButton />
     </div>
-  );
-};
+  )
+}
 
-export default Insumos;
+export default Insumos

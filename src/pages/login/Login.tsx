@@ -2,7 +2,7 @@ import { useState } from "react";
 import { RiMailLine, RiLockPasswordLine, RiEyeLine, RiEyeOffLine } from "react-icons/ri";
 import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
-import { login } from "../../api";
+import { login } from "../../api/api";
 
 const Login = () => {
 

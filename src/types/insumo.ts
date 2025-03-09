@@ -1,4 +1,4 @@
-export type Presentacion = "Kilogramo" | "Gramo" | "Litro" | "Mililitro" | "Unidad" | "Caja" | "Paquete"
+export type Presentacion = "Kilogramos" | "Gramo" | "Litro" | "Mililitro" | "Unidad" | "Caja" | "Paquete"
 
 export type DraftInsumo = {
   nombre: string
