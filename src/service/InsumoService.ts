@@ -1,7 +1,7 @@
 import { api } from "../api/api";
-import type { Insumo, DraftInsumo, Presentacion } from "../types/insumo";
+import type { Insumo, DraftInsumo, Presentacion, Stage, InsumoType } from "../types/insumo";
 
-// Types para mapear los datos del backend
+// Tipos para mapear los datos del backend
 type SupplyResponse = {
   id: number;
   suppliesName: string;
@@ -9,20 +9,16 @@ type SupplyResponse = {
   suppliesQuantity: number;
   suppliesPrice: number;
   suppliesDate: string;
-};
-
-type CreateSupplyRequest = {
-  suppliesName: string;
-  presentation: string;
-  suppliesQuantity: number;
-  suppliesPrice: number;
-  suppliesDate: string;
+  type: string;
+  stage?: string;
 };
 
 // Función para convertir la respuesta del backend al formato del frontend
 const mapSupplyToInsumo = (supply: SupplyResponse): Insumo => {
   const validPresentacion = (presentation: string): Presentacion => {
     const validPresentaciones: Presentacion[] = [
+      "40kg",
+      "20kg",
       "Kilogramos",
       "Gramo",
       "Litro",
@@ -36,6 +32,10 @@ const mapSupplyToInsumo = (supply: SupplyResponse): Insumo => {
       ? (presentation as Presentacion)
       : "Unidad";
   };
+
+  // Validar el tipo de insumo
+  const validTypes: InsumoType[] = ["FOOD", "MEDICINE", "EQUIPMENT", "PACKAGING", "DISINFECTANT", "OTHER"];
+  const tipoInsumo = validTypes.includes(supply.type as InsumoType) ? (supply.type as InsumoType) : "OTHER";
 
   // Asegurarse de que los valores numéricos sean números
   const cantidad = typeof supply.suppliesQuantity === "number" ? supply.suppliesQuantity : 0;
@@ -51,63 +51,29 @@ const mapSupplyToInsumo = (supply: SupplyResponse): Insumo => {
     cantidad: cantidad,
     valor: valor,
     fechaIngreso: fechaIngreso,
+    type: tipoInsumo, // Convertir a InsumoType
+    stage: supply.stage as Stage | undefined, // Convertir a Stage
   };
 };
 
-// Función para manejar fechas en formato ISO (UTC)
-const formatDateToISO = (dateString: string): string => {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-    return dateString;
-  }
-
-  try {
-    // Crear un objeto Date a partir del string en UTC
-    const date = new Date(dateString + 'Z');
-    if (isNaN(date.getTime())) {
-      console.error("Fecha inválida:", dateString);
-      return new Date().toISOString().split("T")[0];
-    }
-
-    // Obtener año, mes y día en UTC
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(date.getUTCDate()).padStart(2, "0");
-
-    // Formatear como YYYY-MM-DD
-    return `${year}-${month}-${day}`;
-  } catch (error) {
-    console.error("Error al formatear fecha:", error, "para la fecha:", dateString);
-    return new Date().toISOString().split("T")[0];
-  }
-};
-
 // Función para convertir datos del frontend al formato del backend
-const mapInsumoToSupply = (insumo: DraftInsumo): CreateSupplyRequest => {
+const mapInsumoToSupply = (insumo: DraftInsumo): SupplyResponse => {
   const cantidad = typeof insumo.cantidad === "string" ? Number.parseFloat(insumo.cantidad) : insumo.cantidad;
   const valor = typeof insumo.valor === "string" ? Number.parseFloat(insumo.valor) : insumo.valor;
 
   // Asegurarse de que la fecha esté en formato ISO (UTC)
-  let fechaFormateada: string;
+  const fechaFormateada = insumo.fechaIngreso ? new Date(insumo.fechaIngreso).toISOString().split("T")[0] : new Date().toISOString().split("T")[0];
 
-  if (typeof insumo.fechaIngreso === "string") {
-    fechaFormateada = formatDateToISO(insumo.fechaIngreso);
-    console.log("Fecha original:", insumo.fechaIngreso, "Fecha formateada:", fechaFormateada);
-  } else {
-    fechaFormateada = formatDateToISO(new Date().toISOString());
-  }
-
-  // Agregar un log para ver los datos que se envían al backend
-  const supplyData = {
+  return {
+    id: 0, // El backend generará el ID automáticamente al crear un nuevo insumo
     suppliesName: insumo.nombre,
     presentation: insumo.presentacion,
     suppliesQuantity: cantidad,
     suppliesPrice: valor,
     suppliesDate: fechaFormateada,
+    type: insumo.type, // Enviar el tipo correctamente
+    stage: insumo.stage, // Enviar la etapa correctamente
   };
-
-  console.log("Datos enviados al backend:", supplyData);
-
-  return supplyData;
 };
 
 // Servicio para gestionar los insumos
@@ -122,7 +88,6 @@ export const insumoService = {
     }
   },
 
-  // Obtener un insumo por ID
   async getById(id: string): Promise<Insumo> {
     try {
       const response = await api.get<SupplyResponse>(`/supplies/${id}`);
@@ -133,7 +98,6 @@ export const insumoService = {
     }
   },
 
-  // Crear un nuevo insumo
   async create(insumo: DraftInsumo): Promise<Insumo> {
     try {
       const supplyData = mapInsumoToSupply(insumo);
@@ -145,7 +109,6 @@ export const insumoService = {
     }
   },
 
-  // Actualizar un insumo existente
   async update(id: string, insumo: DraftInsumo): Promise<Insumo> {
     try {
       const supplyData = mapInsumoToSupply(insumo);
@@ -157,7 +120,6 @@ export const insumoService = {
     }
   },
 
-  // Eliminar un insumo
   async delete(id: string): Promise<void> {
     try {
       await api.delete(`/supplies/${id}`);
