@@ -1,16 +1,17 @@
 import { useState } from "react";
-import { RiMailLine, RiLockPasswordLine, RiEyeLine, RiEyeOffLine, RiUserLine } from "react-icons/ri";
-import { Link } from "react-router-dom";
+import { RiMailLine, RiLockPasswordLine, RiEyeLine, RiEyeOffLine, RiUserLine, RiArrowLeftLine } from "react-icons/ri";
+import {useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Register = () => {
-    // Estados con tipos explícitos
+    
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [name, setName] = useState<string>("");
     const [lastName, setLastName] = useState<string>("");
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [confirmPassword, setConfirmPassword] = useState<string>("");
+    const navigate = useNavigate();
 
     // Función para mostrar/ocultar la contraseña
     const handleShowPassword = (): void => {
@@ -36,14 +37,19 @@ const Register = () => {
             return;
         }
 
-        // Validar que el email no exista en base de datos
-        // Enviar email de verificación
-
-        console.log("Pasan las validaciones", { name, lastName, email, password });
+        // console.log("Pasan las validaciones", { name, lastName, email, password });
     };
 
     return (
-        <div className="bg-[url('/images/bg.jpg')] bg-cover bg-center bg-no-repeat min-h-screen w-full fixed top-0 left-0 flex items-center justify-center">
+        <div className="bg-[url('/images/bg.jpg')] bg-cover bg-center bg-no-repeat min-h-screen w-full font-bold fixed top-0 left-0 flex items-center justify-center">
+            <button
+                onClick={() => navigate("/insumos")}
+                className="absolute top-4 left-4 flex flex-col items-center justify-center p-2 rounded-md w-20 lg:w-24 h-14 lg:h-16 transition-colors bg-green-500 text-white hover:bg-green-600"
+            >
+                <RiArrowLeftLine className="text-xl" />
+                <span className="text-xs">Regresar</span>
+            </button>
+
             <div className="bg-white p-8 rounded-lg w-full md:w-[500px]">
                 <div className="mb-10">
                     <h1 className="text-3xl uppercase font-bold text-center">Registrarse</h1>
@@ -127,26 +133,6 @@ const Register = () => {
                         </button>
                     </div>
                 </form>
-
-                <div className="flex text-center justify-between">
-                    <div>
-                        <span>¿Ya tienes una cuenta?{" "}</span>
-                        <Link
-                            to="/"
-                            className="text-sky-600 font-medium hover:underline transition-all"
-                        >
-                            Ingresa
-                        </Link>
-                    </div>
-                    <div className="text-right text-gray-500">
-                        <Link
-                            to="/forget-password"
-                            className="text-gray-500 text-right font-medium hover:underline transition-all"
-                        >
-                            ¿Olvidaste tu password?
-                        </Link>
-                    </div>
-                </div>
             </div>
         </div>
     );

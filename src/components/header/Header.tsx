@@ -1,6 +1,6 @@
 import { type FC, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { FaBoxOpen, FaBoxes, FaChartLine, FaSignOutAlt, FaBars, FaTimes } from "react-icons/fa"
+import { FaBoxOpen, FaBoxes, FaChartLine, FaSignOutAlt, FaBars, FaTimes, FaUserCheck } from "react-icons/fa"
 import { PiFishSimpleBold } from "react-icons/pi"
 import type { NavItem } from "../../types/navigation"
 
@@ -13,6 +13,12 @@ const Header: FC<HeaderProps> = ({ onLogout }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const navItems: NavItem[] = [
+    {
+      title: "REGISTRAR USUARIO",
+      path: "/register",
+      icon: <FaUserCheck />
+    },
+
     {
       title: "INSUMOS",
       path: "/insumos",

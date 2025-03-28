@@ -199,8 +199,10 @@ const InsumoModal: React.FC = () => {
               type="date"
               className="w-full p-2 bg-blue-100 rounded border border-blue-200 focus:outline-none focus:border-blue-500"
               value={fechaSeleccionada}
-              onChange={(e) => setFechaSeleccionada(e.target.value)}
-              {...register("fechaIngreso", { required: "La fecha es obligatoria" })}
+              {...register("fechaIngreso", {
+                required: "La fecha es obligatoria",
+                onChange: (e) => setFechaSeleccionada(e.target.value),
+              })}
             />
             {errors.fechaIngreso && <span className="text-red-500 text-sm">{errors.fechaIngreso.message}</span>}
           </div>

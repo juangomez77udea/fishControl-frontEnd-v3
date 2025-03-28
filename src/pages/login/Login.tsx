@@ -89,7 +89,7 @@ const Login = () => {
                     </div>
                     <div className="text-right">
                         <Link
-                            className="text-gray-500 font-medium hover:text-sky-600 hover:underline transition-all"
+                            className="text-gray-500 text-xs hover:text-sky-600 hover:underline transition-all"
                             to="forget-password"
                         >
                             ¿Olvidaste tu password?
@@ -101,12 +101,7 @@ const Login = () => {
                         </button>
                     </div>
                 </form>
-                <div className="text-center">
-                    ¿No tienes una cuenta?{" "}
-                    <Link className="text-sky-600 font-medium hover:underline transition-all" to="register">
-                        Regístrate
-                    </Link>
-                </div>
+
             </div>
         </div>
     );
