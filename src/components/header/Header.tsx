@@ -1,8 +1,11 @@
+"use client"
+
 import { type FC, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { FaBoxOpen, FaBoxes, FaChartLine, FaSignOutAlt, FaBars, FaTimes, FaUserCheck } from "react-icons/fa"
 import { PiFishSimpleBold } from "react-icons/pi"
 import type { NavItem } from "../../types/navigation"
+import { useAuthStore } from "../../store/useAuthStore"
 
 type HeaderProps = {
   onLogout?: () => void
@@ -12,34 +15,50 @@ const Header: FC<HeaderProps> = ({ onLogout }) => {
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  const navItems: NavItem[] = [
-    {
-      title: "REGISTRAR USUARIO",
-      path: "/register",
-      icon: <FaUserCheck />
-    },
+  // Usar el store de autenticación para verificar el rol
+  const hasAdminRole = useAuthStore((state) => state.hasRole("ROLE_ADMIN"))
 
-    {
-      title: "INSUMOS",
-      path: "/insumos",
-      icon: <FaBoxOpen className="text-xl" />,
-    },
-    {
-      title: "CULTIVO",
-      path: "/cultivo",
-      icon: <PiFishSimpleBold className="text-xl text-bold" />,
-    },
-    {
-      title: "PRODUCTO",
-      path: "/producto",
-      icon: <FaBoxes className="text-xl" />,
-    },
-    {
-      title: "ESTADÍSTICAS",
-      path: "/estadisticas",
-      icon: <FaChartLine className="text-xl" />,
-    },
-  ]
+  // Filtrar los elementos de navegación según el rol
+  const getNavItems = (): NavItem[] => {
+    const items: NavItem[] = []
+
+    // Solo agregar el botón de registro si el usuario es administrador
+    if (hasAdminRole) {
+      items.push({
+        title: "REGISTRAR USUARIO",
+        path: "/register",
+        icon: <FaUserCheck />,
+      })
+    }
+
+    // Agregar el resto de los elementos de navegación
+    items.push(
+      {
+        title: "INSUMOS",
+        path: "/insumos",
+        icon: <FaBoxOpen className="text-xl" />,
+      },
+      {
+        title: "CULTIVO",
+        path: "/cultivo",
+        icon: <PiFishSimpleBold className="text-xl text-bold" />,
+      },
+      {
+        title: "PRODUCTO",
+        path: "/producto",
+        icon: <FaBoxes className="text-xl" />,
+      },
+      {
+        title: "ESTADÍSTICAS",
+        path: "/estadisticas",
+        icon: <FaChartLine className="text-xl" />,
+      },
+    )
+
+    return items
+  }
+
+  const navItems = getNavItems()
 
   const isActive = (path: string) => location.pathname === path
 
