@@ -18,7 +18,6 @@ export const login = async (username: string, password: string): Promise<AuthRes
   }
 }
 
-// Configurar axios con la baseURL correcta
 export const api: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: {

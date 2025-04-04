@@ -1,5 +1,3 @@
-"use client"
-
 import { type FC, type ReactNode, useState, useEffect, useCallback } from "react"
 import Header from "../components/header/Header"
 import { useNavigate } from "react-router-dom"
@@ -15,7 +13,7 @@ const MenuLayout: FC<MenuLayoutProps> = ({ children }) => {
   const clearUser = useAuthStore((state) => state.clearUser)
 
   useEffect(() => {
-    // Verificar si el usuario está autenticado al montar el componente
+    // Verificar si el usuario está autenticado
     const token = localStorage.getItem("token")
     if (!token) {
       navigate("/")

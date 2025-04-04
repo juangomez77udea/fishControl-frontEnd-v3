@@ -1,5 +1,3 @@
-"use client"
-
 import { type FC, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { FaBoxOpen, FaBoxes, FaChartLine, FaSignOutAlt, FaBars, FaTimes, FaUserCheck } from "react-icons/fa"
