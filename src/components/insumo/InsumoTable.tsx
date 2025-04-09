@@ -92,7 +92,6 @@ const InsumoTable: React.FC = () => {
       renderCell: (params) => {
         const tipo = params.row.type;
         const etapa = params.row.stage;
-        // Solo mostrar la etapa si el tipo es "FOOD"
         return tipo === "FOOD" ? etapa : "No aplica";
       },
     },

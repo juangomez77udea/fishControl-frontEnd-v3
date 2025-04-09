@@ -13,6 +13,7 @@ import PrivateRoute from './routes/PrivateRoute';
 import MenuLayout from './layouts/MenuLayout';
 import Producto from './pages/producto/Producto';
 import Estadistica from './pages/estadistica/Estadistica';
+import ListUsers from './pages/login/ListUsers';
 
 const App: React.FC = () => {
   return (
@@ -36,6 +37,7 @@ const App: React.FC = () => {
         <Route path="/" element={<AuthLayouth />}>
           <Route index element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="/list-users" element={<ListUsers />} />
           <Route path="forget-password" element={<ForgetPassword />} />
           <Route path="change-password/:token" element={<ChangePassword />} />
         </Route>
@@ -67,6 +69,14 @@ const App: React.FC = () => {
               <Estadistica />
             </PrivateRoute>
           } />
+          <Route 
+            path='users'
+            element={
+              <PrivateRoute>
+                <ListUsers />
+              </PrivateRoute>
+            }
+          />
         </Route>
       </Routes>
     </>

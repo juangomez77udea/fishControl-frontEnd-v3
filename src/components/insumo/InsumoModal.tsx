@@ -1,18 +1,20 @@
-import type React from "react";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { FaTimes } from "react-icons/fa";
-import { toast } from "react-toastify";
-import { useInsumoStore } from "../../store/useInsumoStore";
-import type { DraftInsumo, InsumoType, Stage } from "../../types/insumo";
+"use client"
+
+import type React from "react"
+import { useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
+import { FaTimes } from "react-icons/fa"
+import { toast } from "react-toastify"
+import { useInsumoStore } from "../../store/useInsumoStore"
+import type { DraftInsumo, InsumoType, Stage } from "../../types/insumo"
 
 // Definir las opciones de presentación, tipo de insumo y etapas
-const presentaciones = ["40kg", "20kg", "Kilogramos", "Gramo", "Litro", "Mililitro", "Unidad", "Caja", "Paquete"];
-const tiposInsumo: InsumoType[] = ["FOOD", "MEDICINE", "EQUIPMENT", "PACKAGING", "DISINFECTANT", "OTHER"];
-const etapas: Stage[] = ["cría", "destete", "levante", "engorde"];
+const presentaciones = ["40kg", "20kg", "Kilogramos", "Gramo", "Litro", "Mililitro", "Unidad", "Caja", "Paquete"]
+const tiposInsumo: InsumoType[] = ["FOOD", "MEDICINE", "EQUIPMENT", "PACKAGING", "DISINFECTANT", "OTHER"]
+const etapas: Stage[] = ["cría", "destete", "levante", "engorde"]
 
 const InsumoModal: React.FC = () => {
-  const { isModalOpen, closeModal, addInsumo, updateInsumo, activeId, insumos, isLoading } = useInsumoStore();
+  const { isModalOpen, closeModal, addInsumo, updateInsumo, activeId, insumos, isLoading } = useInsumoStore()
   const {
     register,
     handleSubmit,
@@ -20,69 +22,89 @@ const InsumoModal: React.FC = () => {
     reset,
     watch,
     formState: { errors },
-  } = useForm<DraftInsumo>();
+  } = useForm<DraftInsumo>({
+    mode: "onChange", // Validar al cambiar los campos
+  })
 
   // Observar el valor del campo "type" para mostrar/ocultar el campo "stage"
-  const tipoSeleccionado = watch("type");
+  const tipoSeleccionado = watch("type")
 
   // Estado local para la fecha
-  const [fechaSeleccionada, setFechaSeleccionada] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState<string>(new Date().toISOString().split("T")[0])
 
   // Efecto para cargar datos cuando se edita un insumo
   useEffect(() => {
     if (activeId) {
-      const insumoToEdit = insumos.find((i) => i.id === activeId);
+      const insumoToEdit = insumos.find((i) => i.id === activeId)
       if (insumoToEdit) {
-        setValue("nombre", insumoToEdit.nombre);
-        setValue("cantidad", insumoToEdit.cantidad);
-        setValue("presentacion", insumoToEdit.presentacion);
-        setValue("valor", insumoToEdit.valor);
-        setValue("type", insumoToEdit.type);
-        setValue("stage", insumoToEdit.stage);
-        setValue("fechaIngreso", insumoToEdit.fechaIngreso);
-        setFechaSeleccionada(insumoToEdit.fechaIngreso);
+        setValue("nombre", insumoToEdit.nombre)
+        setValue("cantidad", insumoToEdit.cantidad)
+        setValue("presentacion", insumoToEdit.presentacion)
+        setValue("valor", insumoToEdit.valor)
+        setValue("type", insumoToEdit.type)
+        setValue("stage", insumoToEdit.stage)
+        setValue("fechaIngreso", insumoToEdit.fechaIngreso)
+        setFechaSeleccionada(insumoToEdit.fechaIngreso)
       }
     } else {
       // Valores por defecto para un nuevo insumo
       reset({
         nombre: "",
-        cantidad: 0,
+        cantidad: 1, // Valor por defecto positivo
         presentacion: "40kg",
-        valor: 0,
+        valor: undefined, // Sin valor predefinido
         fechaIngreso: new Date().toISOString().split("T")[0],
         type: "FOOD", // Tipo por defecto
         stage: "cría", // Etapa por defecto
-      });
-      setFechaSeleccionada(new Date().toISOString().split("T")[0]);
+      })
+      setFechaSeleccionada(new Date().toISOString().split("T")[0])
     }
-  }, [activeId, insumos, setValue, reset]);
+  }, [activeId, insumos, setValue, reset])
 
   // Función para manejar el envío del formulario
   const onSubmit = async (data: DraftInsumo) => {
     try {
+      // Validaciones adicionales antes de enviar
+      if (!data.nombre || data.nombre.trim() === "") {
+        toast.error("El nombre del insumo es obligatorio")
+        return
+      }
+
+      const cantidad = typeof data.cantidad === "string" ? Number.parseFloat(data.cantidad) : data.cantidad
+      if (isNaN(cantidad) || cantidad <= 0) {
+        toast.error("La cantidad debe ser un número mayor que cero")
+        return
+      }
+
+      const valor = typeof data.valor === "string" ? Number.parseFloat(data.valor) : data.valor
+      if (isNaN(valor) || valor <= 0) {
+        toast.error("El valor debe ser un número mayor que cero")
+        return
+      }
+
       const formattedData: DraftInsumo = {
         ...data,
-        cantidad: typeof data.cantidad === "string" ? Number.parseFloat(data.cantidad) : data.cantidad,
-        valor: typeof data.valor === "string" ? Number.parseFloat(data.valor) : data.valor,
+        cantidad,
+        valor,
         fechaIngreso: fechaSeleccionada,
-      };
+      }
 
       if (activeId) {
-        await updateInsumo(formattedData);
-        toast.success("Insumo actualizado correctamente");
+        await updateInsumo(formattedData)
       } else {
-        await addInsumo(formattedData);
-        toast.success("Insumo agregado correctamente");
+        await addInsumo(formattedData)
       }
-      closeModal();
-      reset();
-    } catch (error) {
-      console.error("Error en el formulario:", error);
-      toast.error("Error al procesar el formulario. Por favor, inténtalo de nuevo.");
-    }
-  };
 
-  if (!isModalOpen) return null;
+      // No mostramos toast aquí, lo manejamos en el store
+      closeModal()
+      reset()
+    } catch (error) {
+      console.error("Error en el formulario:", error)
+      // No mostramos toast aquí, lo manejamos en el store
+    }
+  }
+
+  if (!isModalOpen) return null
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -102,7 +124,10 @@ const InsumoModal: React.FC = () => {
               type="text"
               className="w-full p-2 bg-blue-100 rounded border border-blue-200 focus:outline-none focus:border-blue-500"
               placeholder="Ingrese el nombre del insumo"
-              {...register("nombre", { required: "El nombre del insumo es obligatorio" })}
+              {...register("nombre", {
+                required: "El nombre del insumo es obligatorio",
+                validate: (value) => value.trim() !== "" || "El nombre no puede estar vacío",
+              })}
             />
             {errors.nombre && <span className="text-red-500 text-sm">{errors.nombre.message}</span>}
           </div>
@@ -163,11 +188,12 @@ const InsumoModal: React.FC = () => {
             <input
               type="number"
               className="w-full p-2 bg-blue-100 rounded border border-blue-200 focus:outline-none focus:border-blue-500"
-              min="0"
-              step="0.01"
+              min="0.5"
+              step="0.5"
               {...register("cantidad", {
                 required: "La cantidad es obligatoria",
                 valueAsNumber: true,
+                validate: (value) => value > 0 || "La cantidad debe ser mayor que cero",
               })}
             />
             {errors.cantidad && <span className="text-red-500 text-sm">{errors.cantidad.message}</span>}
@@ -181,11 +207,13 @@ const InsumoModal: React.FC = () => {
               <input
                 type="number"
                 className="w-full p-2 pl-6 bg-blue-100 rounded border border-blue-200 focus:outline-none focus:border-blue-500"
-                min="0"
-                step="0.01"
+                min="1"
+                step="1"
+                placeholder="Ingrese el valor"
                 {...register("valor", {
                   required: "El valor es obligatorio",
                   valueAsNumber: true,
+                  validate: (value) => value > 0 || "El valor debe ser mayor que cero",
                 })}
               />
             </div>
@@ -220,7 +248,7 @@ const InsumoModal: React.FC = () => {
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default InsumoModal;
+export default InsumoModal

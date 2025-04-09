@@ -1,6 +1,7 @@
 import { type FC, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { FaBoxOpen, FaBoxes, FaChartLine, FaSignOutAlt, FaBars, FaTimes, FaUserCheck } from "react-icons/fa"
+import { MdPersonSearch } from "react-icons/md"
 import { PiFishSimpleBold } from "react-icons/pi"
 import type { NavItem } from "../../types/navigation"
 import { useAuthStore } from "../../store/useAuthStore"
@@ -20,16 +21,21 @@ const Header: FC<HeaderProps> = ({ onLogout }) => {
   const getNavItems = (): NavItem[] => {
     const items: NavItem[] = []
 
-    // Solo agregar el botón de registro si el usuario es administrador
+    // Botones si el usuario es administrador
     if (hasAdminRole) {
-      items.push({
+      items.push(
+        {
         title: "REGISTRAR USUARIO",
         path: "/register",
         icon: <FaUserCheck />,
-      })
+      },{
+      title: "LISTAR USUARIOS",
+      path: "/users",
+      icon: <MdPersonSearch />
+    }
+    )
     }
 
-    // Agregar el resto de los elementos de navegación
     items.push(
       {
         title: "INSUMOS",

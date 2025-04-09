@@ -9,7 +9,6 @@ import { toast } from "react-toastify"
 const Insumos: React.FC = () => {
   const { fetchInsumos, isLoading, error } = useInsumoStore()
 
-  // Cargar los insumos al montar el componente
   useEffect(() => {
     fetchInsumos()
   }, [fetchInsumos])
