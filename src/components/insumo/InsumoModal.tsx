@@ -11,7 +11,7 @@ import type { DraftInsumo, InsumoType, Stage } from "../../types/insumo"
 // Definir las opciones de presentación, tipo de insumo y etapas
 const presentaciones = ["40kg", "20kg", "Kilogramos", "Gramo", "Litro", "Mililitro", "Unidad", "Caja", "Paquete"]
 const tiposInsumo: InsumoType[] = ["FOOD", "MEDICINE", "EQUIPMENT", "PACKAGING", "DISINFECTANT", "OTHER"]
-const etapas: Stage[] = ["cría", "destete", "levante", "engorde"]
+const etapas: Stage[] = ["cría", "levante", "engorde"]
 
 const InsumoModal: React.FC = () => {
   const { isModalOpen, closeModal, addInsumo, updateInsumo, activeId, insumos, isLoading } = useInsumoStore()

@@ -1,34 +1,35 @@
-import React from 'react';
-import { Route, Routes, Outlet } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import Login from './pages/login/Login';
-import Register from './pages/login/Register';
-import ForgetPassword from './pages/login/ForgetPassword';
-import ChangePassword from './pages/login/ChangePassword';
-import AuthLayouth from './layouts/AuthLayouth';
-import Insumos from './pages/insumos/Insumos';
-import Cultivo from './pages/cultivo/Cultivo';
-import PrivateRoute from './routes/PrivateRoute';
-import MenuLayout from './layouts/MenuLayout';
-import Producto from './pages/producto/Producto';
-import Estadistica from './pages/estadistica/Estadistica';
-import ListUsers from './pages/login/ListUsers';
+import type React from "react"
+import { Route, Routes, Outlet } from "react-router-dom"
+import { ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import Login from "./pages/login/Login"
+import Register from "./pages/login/Register"
+import ForgetPassword from "./pages/login/ForgetPassword"
+import ChangePassword from "./pages/login/ChangePassword"
+import AuthLayouth from "./layouts/AuthLayouth"
+import Insumos from "./pages/insumos/Insumos"
+import Cultivo from "./pages/cultivo/Cultivo"
+import PrivateRoute from "./routes/PrivateRoute"
+import MenuLayout from "./layouts/MenuLayout"
+import Producto from "./pages/producto/Producto"
+import Estadistica from "./pages/estadistica/Estadistica"
+import ListUsers from "./pages/login/ListUsers"
+import InactivityMonitor from "./components/InactivityMonitor"
 
 const App: React.FC = () => {
   return (
-    <>
+    <InactivityMonitor>
       <ToastContainer
-        position="top-center" 
-        autoClose={3000} 
-        hideProgressBar={false} 
-        newestOnTop={false} 
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
         closeOnClick
         rtl={false}
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        style={{ top: '1rem', left: '50%', transform: 'translateX(-50%)' }}
+        style={{ top: "1rem", left: "50%", transform: "translateX(-50%)" }}
       />
 
       {/* Rutas de la aplicación */}
@@ -43,34 +44,56 @@ const App: React.FC = () => {
         </Route>
 
         {/* Rutas protegidas */}
-        <Route path="/" element={<MenuLayout><Outlet /></MenuLayout>}>
-          <Route path="insumos" element={
-            <PrivateRoute>
-              <Insumos />
-            </PrivateRoute>
-          } />
-          <Route path="lotes" element={
-            <PrivateRoute>
-              <Cultivo />
-            </PrivateRoute>
-          } />
-          <Route path="cultivo" element={
-            <PrivateRoute>
-              <Cultivo />
-            </PrivateRoute>
-          } />
-          <Route path="producto" element={
-            <PrivateRoute>
-              <Producto />
-            </PrivateRoute>
-          } />
-          <Route path="estadisticas" element={
-            <PrivateRoute>
-              <Estadistica />
-            </PrivateRoute>
-          } />
-          <Route 
-            path='users'
+        <Route
+          path="/"
+          element={
+            <MenuLayout>
+              <Outlet />
+            </MenuLayout>
+          }
+        >
+          <Route
+            path="insumos"
+            element={
+              <PrivateRoute>
+                <Insumos />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="lotes"
+            element={
+              <PrivateRoute>
+                <Cultivo />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="cultivo"
+            element={
+              <PrivateRoute>
+                <Cultivo />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="producto"
+            element={
+              <PrivateRoute>
+                <Producto />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="estadisticas"
+            element={
+              <PrivateRoute>
+                <Estadistica />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="users"
             element={
               <PrivateRoute>
                 <ListUsers />
@@ -79,8 +102,8 @@ const App: React.FC = () => {
           />
         </Route>
       </Routes>
-    </>
-  );
+    </InactivityMonitor>
+  )
 }
 
-export default App;
+export default App

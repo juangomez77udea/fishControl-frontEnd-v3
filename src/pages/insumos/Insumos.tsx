@@ -4,6 +4,7 @@ import { useInsumoStore } from "../../store/useInsumoStore"
 import InsumoTable from "../../components/insumo/InsumoTable"
 import InsumoModal from "../../components/insumo/InsumoModal"
 import AddInsumoButton from "../../components/insumo/AddInsumoButton"
+import SearchWithResults from "../../components/insumo/SearchWithResults"
 import { toast } from "react-toastify"
 
 const Insumos: React.FC = () => {
@@ -22,7 +23,11 @@ const Insumos: React.FC = () => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Gestión de Insumos</h1>
+      {/* Encabezado con título y barra de búsqueda */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-gray-800">Gestión de Insumos</h1>
+        <SearchWithResults className="w-full md:w-96" />
+      </div>
 
       {/* Mostrar un spinner si está cargando */}
       {isLoading ? (
