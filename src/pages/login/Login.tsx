@@ -3,7 +3,7 @@ import type React from "react"
 import { useState } from "react"
 import { RiMailLine, RiLockPasswordLine, RiEyeLine, RiEyeOffLine } from "react-icons/ri"
 import { toast } from "react-toastify"
-import { Link, useNavigate } from "react-router-dom"
+import {  useNavigate } from "react-router-dom"
 import { login } from "../../api/api"
 import { useAuthStore } from "../../store/useAuthStore"
 import type { UserRole } from "../../types/Auth"
@@ -106,12 +106,12 @@ const Login = () => {
             )}
           </div>
           <div className="text-right">
-            <Link
+            {/* <Link
               className="text-gray-500 text-xs hover:text-sky-600 hover:underline transition-all"
               to="forget-password"
             >
               ¿Olvidaste tu password?
-            </Link>
+            </Link> */}
           </div>
           <div>
             <button className="bg-sky-300 text-gray-700 w-full py-2 px-6 rounded-4xl mt-6 hover:bg-green-300 transition-all">

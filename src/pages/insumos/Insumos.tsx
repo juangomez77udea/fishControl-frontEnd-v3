@@ -1,32 +1,36 @@
-import type React from "react"
-import { useEffect } from "react"
-import { useInsumoStore } from "../../store/useInsumoStore"
-import InsumoTable from "../../components/insumo/InsumoTable"
-import InsumoModal from "../../components/insumo/InsumoModal"
-import AddInsumoButton from "../../components/insumo/AddInsumoButton"
-import SearchWithResults from "../../components/insumo/SearchWithResults"
-import { toast } from "react-toastify"
+import type React from "react";
+import { useEffect } from "react";
+import { useInsumoStore } from "../../store/useInsumoStore";
+import InsumoTable from "../../components/insumo/InsumoTable";
+import InsumoModal from "../../components/insumo/InsumoModal";
+import AddInsumoButton from "../../components/insumo/AddInsumoButton";
+import SearchWithResults from "../../components/insumo/SearchWithResults";
+import Report from "../../components/report/Report";
+import { toast } from "react-toastify";
 
 const Insumos: React.FC = () => {
-  const { fetchInsumos, isLoading, error } = useInsumoStore()
+  const { fetchInsumos, isLoading, error } = useInsumoStore();
 
   useEffect(() => {
-    fetchInsumos()
-  }, [fetchInsumos])
+    fetchInsumos();
+  }, [fetchInsumos]);
 
   // Mostrar errores si ocurren
   useEffect(() => {
     if (error) {
-      toast.error(error)
+      toast.error(error);
     }
-  }, [error])
+  }, [error]);
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      {/* Encabezado con título y barra de búsqueda */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      {/* Encabezado con título, barra de búsqueda y botón de generación de reportes */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-2">
         <h1 className="text-2xl font-bold text-gray-800">Gestión de Insumos</h1>
-        <SearchWithResults className="w-full md:w-96" />
+        <div className="flex flex-col md:flex-row gap-2 md:items-center">
+          <SearchWithResults className="w-full md:w-96" />
+          <Report />
+        </div>
       </div>
 
       {/* Mostrar un spinner si está cargando */}
@@ -45,7 +49,7 @@ const Insumos: React.FC = () => {
       <InsumoModal />
       <AddInsumoButton />
     </div>
-  )
-}
+  );
+};
 
-export default Insumos
+export default Insumos;

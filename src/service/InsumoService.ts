@@ -51,8 +51,8 @@ const mapSupplyToInsumo = (supply: SupplyResponse): Insumo => {
     cantidad: cantidad,
     valor: valor,
     fechaIngreso: fechaIngreso,
-    type: tipoInsumo, // Convertir a InsumoType
-    stage: supply.stage as Stage | undefined, // Convertir a Stage
+    type: tipoInsumo,
+    stage: supply.stage as Stage | undefined, 
   }
 }
 
