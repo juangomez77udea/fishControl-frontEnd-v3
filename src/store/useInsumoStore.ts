@@ -17,7 +17,7 @@ type InsumoState = {
   deleteInsumo: (id: string) => Promise<void>
   setActiveInsumo: (id: string | null) => void
   updateInsumo: (data: DraftInsumo) => Promise<void>
-  fetchInsumos: () => Promise<void>
+  
 }
 
 export const useInsumoStore = create<InsumoState>()(

@@ -13,7 +13,7 @@ const ListUsers = () => {
   const isAdmin = useAuthStore((state) => state.hasRole("ROLE_ADMIN"))
   const navigate = useNavigate()
 
-  // Verificar si el usuario es administrador
+  // Verificar si el usuario es administrador al cargar el componente
   useEffect(() => {
     if (!isAdmin) {
       navigate("/insumos")
@@ -23,7 +23,6 @@ const ListUsers = () => {
     }
   }, [isAdmin, navigate, fetchUsers])
 
-  
   useEffect(() => {
     if (error) {
       toast.error(error)
@@ -89,16 +88,14 @@ const ListUsers = () => {
         let roleName: string
 
         if (typeof role === "string") {
-          roleName = role
+          // Eliminar el prefijo "ROLE_" si existe
+          roleName = role.replace(/^ROLE_/i, "")
         } else if (typeof role === "object" && role !== null) {
           // Si es un objeto, intentar obtener la propiedad 'name'
           roleName = (role as { name?: string }).name || "Desconocido"
         } else {
           return "Desconocido"
         }
-
-        // Eliminar el prefijo "ROLE_" si existe
-        roleName = roleName.replace(/^ROLE_/i, "")
 
         // Formatear el nombre del rol (primera letra mayúscula, resto minúsculas)
         return roleName.charAt(0).toUpperCase() + roleName.slice(1).toLowerCase()
@@ -161,6 +158,7 @@ const ListUsers = () => {
     },
   ]
 
+  // Si no es administrador, no renderizar el componente
   if (!isAdmin) {
     return null
   }
@@ -194,4 +192,3 @@ const ListUsers = () => {
 }
 
 export default ListUsers
-

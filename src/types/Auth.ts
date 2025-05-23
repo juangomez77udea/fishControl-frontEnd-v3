@@ -1,5 +1,17 @@
+import type { AxiosError } from "axios"
+
+// Tipo para las respuestas de error del backend
+export type ApiErrorResponse = {
+  status?: number
+  error?: string
+  message?: string
+  path?: string
+}
+
+export type ApiError = AxiosError<ApiErrorResponse>
+
 // Tipos de roles de usuario
-export type UserRole = "ROLE_ADMIN" | "ROLE_USER" | "ROLE_GUEST"
+export type UserRole = "ROLE_ADMIN" | "ROLE_USER" | "ROLE_GUEST" | "ROLE_INVITED"
 
 // Tipo para la información del usuario autenticado
 export type AuthUser = {
@@ -17,4 +29,3 @@ export type AuthResponse = {
   username: string
   roles: string[]
 }
-

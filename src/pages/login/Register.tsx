@@ -1,6 +1,6 @@
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { RiMailLine, RiLockPasswordLine, RiEyeLine, RiEyeOffLine, RiUserLine, RiArrowLeftLine } from "react-icons/ri"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
@@ -51,12 +51,13 @@ const Register = () => {
     const navigate = useNavigate()
     const isAdmin = useAuthStore((state) => state.hasRole("ROLE_ADMIN"))
 
-    // Verificar si el usuario es administrador
-    if (!isAdmin) {
-        // Redirigir si no es administrador
-        navigate("/insumos")
-        toast.error("No tienes permisos para acceder a esta página", { theme: "dark" })
-    }
+    // Verificar si el usuario es administrador al cargar el componente
+    useEffect(() => {
+        if (!isAdmin) {
+            navigate("/insumos")
+            toast.error("No tienes permisos para acceder a esta página", { theme: "dark" })
+        }
+    }, [isAdmin, navigate])
 
     // Función para mostrar/ocultar la contraseña
     const handleShowPassword = (): void => {
@@ -162,6 +163,11 @@ const Register = () => {
             ...formData,
             roles: [e.target.value],
         })
+    }
+
+    // Si no es administrador, no renderizar el componente
+    if (!isAdmin) {
+        return null
     }
 
     return (
@@ -284,4 +290,3 @@ const Register = () => {
 }
 
 export default Register
-

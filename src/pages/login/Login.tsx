@@ -7,6 +7,7 @@ import {  useNavigate } from "react-router-dom"
 import { login } from "../../api/api"
 import { useAuthStore } from "../../store/useAuthStore"
 import type { UserRole } from "../../types/Auth"
+import { decodeJwt } from "../../utils/jwt"
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false)
@@ -45,14 +46,24 @@ const Login = () => {
         // Guardar el token en localStorage
         localStorage.setItem("token", response.token)
 
-        // Convertir los roles a UserRole[] y guardar la información del usuario en el store
-        const userRoles = response.roles?.map((role: string) => role as UserRole) || []
+        // Decodificar el token para obtener los roles
+        const decodedToken = decodeJwt(response.token)
+        console.log("Token decodificado:", decodedToken)
 
+        // Obtener los roles del token decodificado
+        const rolesFromToken = decodedToken?.roles || []
+        console.log("Roles obtenidos del token:", rolesFromToken)
+
+        // Los roles ya vienen con el formato ROLE_XXX desde el backend
+        const userRoles = rolesFromToken as UserRole[]
+        console.log("Roles finales para el store:", userRoles)
+
+        // Guardar la información del usuario en el store
         setUser({
           username: response.username,
           roles: userRoles,
           token: response.token,
-          refreshToken: response.refreshToken,
+          refreshToken: response.refreshToken || "",
         })
 
         toast.success("Inicio de sesión exitoso", { theme: "dark" })
@@ -125,4 +136,3 @@ const Login = () => {
 }
 
 export default Login
-

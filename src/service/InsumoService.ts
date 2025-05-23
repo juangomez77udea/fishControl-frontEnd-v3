@@ -1,4 +1,4 @@
-import { api } from "../api/api"
+import { supplyApi as api } from "../api/supplyApi"
 import type { Insumo, DraftInsumo, Presentacion, Stage, InsumoType } from "../types/insumo"
 
 // Tipos para mapear los datos del backend

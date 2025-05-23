@@ -1,4 +1,4 @@
-import { type FC, useState } from "react"
+import { type FC, useState, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { FaBoxOpen, FaBoxes, FaChartLine, FaSignOutAlt, FaBars, FaTimes, FaUserCheck } from "react-icons/fa"
 import { MdPersonSearch } from "react-icons/md"
@@ -14,8 +14,16 @@ const Header: FC<HeaderProps> = ({ onLogout }) => {
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  // Usar el store de autenticación para verificar el rol
+  // Obtener el usuario y sus roles del store
+  const user = useAuthStore((state) => state.user)
   const hasAdminRole = useAuthStore((state) => state.hasRole("ROLE_ADMIN"))
+
+  // Log para depuración - ver los roles del usuario actual
+  useEffect(() => {
+    console.log("Usuario actual:", user)
+    console.log("Roles del usuario:", user?.roles)
+    console.log("¿Tiene rol de admin?", hasAdminRole)
+  }, [user, hasAdminRole])
 
   // Filtrar los elementos de navegación según el rol
   const getNavItems = (): NavItem[] => {
@@ -23,6 +31,7 @@ const Header: FC<HeaderProps> = ({ onLogout }) => {
 
     // Botones si el usuario es administrador
     if (hasAdminRole) {
+      console.log("Añadiendo botones de administrador al menú")
       items.push(
         {
         title: "REGISTRAR USUARIO",
@@ -144,9 +153,17 @@ const Header: FC<HeaderProps> = ({ onLogout }) => {
           </div>
         </nav>
       )}
+
+      {/* Información de depuración (solo visible en desarrollo) */}
+      {import.meta.env.MODE === 'development' && (
+        <div className="mt-2 p-2 bg-gray-800 text-white text-xs rounded">
+          <p>Usuario: {user?.username || 'No autenticado'}</p>
+          <p>Roles: {user?.roles?.join(', ') || 'Ninguno'}</p>
+          <p>Es Admin: {hasAdminRole ? 'Sí' : 'No'}</p>
+        </div>
+      )}
     </header>
   )
 }
 
 export default Header
-
