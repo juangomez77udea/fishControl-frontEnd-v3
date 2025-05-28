@@ -154,14 +154,20 @@ const Header: FC<HeaderProps> = ({ onLogout }) => {
         </nav>
       )}
 
-      {/* Información de depuración (solo visible en desarrollo) */}
-      {import.meta.env.MODE === 'development' && (
-        <div className="mt-2 p-2 bg-gray-800 text-white text-xs rounded">
-          <p>Usuario: {user?.username || 'No autenticado'}</p>
-          <p>Roles: {user?.roles?.join(', ') || 'Ninguno'}</p>
-          <p>Es Admin: {hasAdminRole ? 'Sí' : 'No'}</p>
-        </div>
-      )}
+{import.meta.env.MODE === 'development' && (
+  <div className=" font-black mt-1 p-1 bg-gray-800 text-white text-xs rounded w-fit max-w-sm ml-1 shadow-md">
+    <p >Usuario: {user?.username || 'No autenticado'}</p>
+    <p>
+      Rol: {
+        user?.roles?.[0] === 'ROLE_ADMIN' ? 'Administrador' :
+        user?.roles?.[0] === 'ROLE_USER' ? 'Usuario' :
+        user?.roles?.[0] === 'ROLE_INVITED' ? 'Invitado' :
+        'Desconocido'
+      }
+    </p>
+  </div>
+)}
+
     </header>
   )
 }

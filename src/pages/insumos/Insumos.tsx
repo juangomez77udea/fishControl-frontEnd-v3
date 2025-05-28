@@ -9,11 +9,8 @@ import Report from "../../components/report/Report";
 import { toast } from "react-toastify";
 
 const Insumos: React.FC = () => {
-  const { fetchInsumos, isLoading, error } = useInsumoStore();
+  const {  isLoading, error } = useInsumoStore();
 
-  useEffect(() => {
-    fetchInsumos();
-  }, [fetchInsumos]);
 
   // Mostrar errores si ocurren
   useEffect(() => {

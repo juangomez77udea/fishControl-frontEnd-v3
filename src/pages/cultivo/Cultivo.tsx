@@ -102,9 +102,9 @@ export default function Cultivo() {
 
   return (
     <div className="flex flex-col gap-6 p-4 max-w-7xl mx-auto">
+      <h2 className="text-xl font-bold mb-2 text-gray-800">Gestión Lotes</h2>
       {/* Contenedor Superior - Formulario */}
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-        <h2 className="text-xl font-bold mb-6 text-gray-800">Gestión Lotes</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex flex-col gap-2">
@@ -154,7 +154,6 @@ export default function Cultivo() {
                   fullWidth
                   variant="outlined"
                   className="bg-white"
-                  inputProps={{ step: "0.01" }}
                   error={!!error}
                   helperText={error?.message}
                 />
@@ -222,9 +221,8 @@ export default function Cultivo() {
             </button>
             <button
               type="button"
-              className={`bg-red-500 hover:bg-red-600 text-white px-2 py-2 rounded-md transition-colors duration-200 font-bold ${
-                !selectedBatchId || isLoading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className={`bg-red-500 hover:bg-red-600 text-white px-2 py-2 rounded-md transition-colors duration-200 font-bold ${!selectedBatchId || isLoading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               onClick={handleDeleteBatch}
               disabled={!selectedBatchId || isLoading}
             >
