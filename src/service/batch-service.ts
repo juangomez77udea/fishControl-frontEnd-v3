@@ -1,7 +1,4 @@
-// services/batch-service.ts
-import { batchApiInstance } from "../api/batchApi"; // Asegúrate de que batchApiInstance esté exportado desde ../api/api
-// o si está en el mismo archivo api.ts:
-// import { batchApiInstance } from "../api/api";
+import { batchApiInstance } from "../api/batchApi";
 
 
 // Tipos para la respuesta del backend y el modelo del frontend
@@ -39,8 +36,8 @@ const mapBatchResponseToBatch = (batch: BatchResponse): Batch => {
 export const batchService = {
   async getAll(): Promise<Batch[]> {
     try {
-      // La URL completa será: http://localhost:7777/api/batches
-      const response = await batchApiInstance.get<BatchResponse[]>("/batches");
+    
+      const response = await batchApiInstance.get<BatchResponse[]>("/batches/");
       return response.data.map(mapBatchResponseToBatch);
     } catch (error) {
       console.error("Error al obtener lotes:", error);
@@ -72,7 +69,7 @@ export const batchService = {
 
       console.log("Enviando datos de lote al backend:", batchData);
       // URL: http://localhost:7777/api/batches
-      const response = await batchApiInstance.post<BatchResponse>("/batches", batchData);
+      const response = await batchApiInstance.post<BatchResponse>("/batches/", batchData);
       return mapBatchResponseToBatch(response.data);
     } catch (error) {
       console.error("Error al crear lote:", error);
