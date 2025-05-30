@@ -271,7 +271,7 @@ const Register = () => {
                         >
                             <option value="USER">Usuario</option>
                             <option value="ADMIN">Administrador</option>
-                            <option value="GUEST">Invitado</option>
+                            {/* <option value="GUEST">Invitado</option> */}
                         </select>
                     </div>
                     <div>

@@ -80,7 +80,7 @@ const Header: FC<HeaderProps> = ({ onLogout }) => {
   }
 
   return (
-    <header className="bg-blue-950 py-2 px-4">
+    <header className="bg-blue-950 py-4 px-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <img src="/images/logo2.png" alt="Fish Control Logo" className="h-12 md:h-16" />
