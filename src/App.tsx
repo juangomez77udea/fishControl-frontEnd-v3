@@ -15,6 +15,7 @@ import Producto from "./pages/producto/Producto"
 import Estadistica from "./pages/estadistica/Estadistica"
 import ListUsers from "./pages/login/ListUsers"
 import InactivityMonitor from "./components/InactivityMonitor"
+import PoundControl from "./components/pound/PoundControl"
 
 const App: React.FC = () => {
   return (
@@ -97,6 +98,14 @@ const App: React.FC = () => {
             element={
               <PrivateRoute>
                 <ListUsers />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="estanque/:productId"
+            element={
+              <PrivateRoute>
+                <PoundControl />
               </PrivateRoute>
             }
           />

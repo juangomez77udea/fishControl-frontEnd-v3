@@ -1,10 +1,12 @@
+// src/store/specie-store.ts
 import { create } from "zustand";
-import { devtools } from "zustand/middleware";
+import { devtools } from "zustand/middleware"; // No se usa persist aquí, puedes quitarlo si no es necesario
 import { toast } from "react-toastify";
 import { isAxiosError } from "axios";
 import { specieService, type Specie, type CreateSpecie } from "../service/specie-service";
 
-type SpecieState = {
+// --- ESTA ES LA LÍNEA CLAVE ---
+export type SpecieState = { // <--- DEBE TENER 'export'
   species: Specie[];
   isLoading: boolean;
   error: string | null;
@@ -20,9 +22,7 @@ export const useSpecieStore = create<SpecieState>()(
       error: null,
 
       fetchSpecies: async () => {
-        // Evita recargar si ya hay especies o si ya está cargando
-        if (get().species.length > 0 || get().isLoading) return;
-        
+        if (get().isLoading) return; // Evitar recargar si ya está cargando
         try {
           set({ isLoading: true, error: null });
           const species = await specieService.getAll();
@@ -39,16 +39,20 @@ export const useSpecieStore = create<SpecieState>()(
         try {
           set({ isLoading: true, error: null });
           const newSpecie = await specieService.create(specieData);
-          set((state) => ({
-            species: [...state.species, newSpecie],
-            isLoading: false,
-          }));
-          toast.success(`Especie "${newSpecie.name}" creada correctamente.`);
-          return newSpecie;
+          if (newSpecie) { // Verificar si newSpecie no es null
+            set((state) => ({
+              species: [...state.species, newSpecie],
+              isLoading: false,
+            }));
+            toast.success(`Especie "${newSpecie.name}" creada correctamente.`);
+            return newSpecie;
+          }
+          // Si newSpecie es null (por ejemplo, si el servicio devuelve null en error)
+          throw new Error("La creación de la especie no devolvió datos válidos.");
         } catch (error) {
           let errorMessage = "Error al crear la especie.";
           if (isAxiosError(error) && error.response?.data?.message) {
-            errorMessage = error.response.data.message;
+            errorMessage = error.response.data.message as string; // Asegurar que es string
           }
           console.error(errorMessage, error);
           set({ isLoading: false, error: errorMessage });
@@ -59,6 +63,9 @@ export const useSpecieStore = create<SpecieState>()(
     }),
     {
       name: "specie-storage",
+      // Si no quieres persistir el estado de especies, puedes quitar `partialize` o todo el objeto de persistencia.
+      // O si quieres persistir todo:
+      // version: 1, // Opcional para migraciones de persistencia
     }
   )
 );

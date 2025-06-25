@@ -88,6 +88,7 @@ const Login = () => {
           <div className="relative">
             <RiMailLine className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500" />
             <input
+              name="usernamePassword"
               type="text"
               className="border border-gray-200 outline-none py-2 px-8 rounded-lg w-full"
               placeholder="Usuario"
@@ -98,6 +99,7 @@ const Login = () => {
           <div className="relative">
             <RiLockPasswordLine className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500" />
             <input
+              name="password"
               type={showPassword ? "text" : "password"}
               className="border border-gray-200 outline-none py-2 px-8 rounded-lg w-full"
               placeholder="Password"

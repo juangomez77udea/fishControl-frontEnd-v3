@@ -1,7 +1,4 @@
-// src/service/batch-service.ts
-
 import { batchApiInstance } from "../api/batchApi";
-
 // Tipos para la respuesta del backend y el modelo del frontend
 export type BatchResponse = {
   batchId: number;
@@ -10,57 +7,48 @@ export type BatchResponse = {
   entryDate: string;
   batchAge: number;
   animalsRemoved: number;
-  specieId: number; 
+  specieId: number;
 };
 
-// Tipo del modelo para el frontend. Ya incluye specieName.
 export type Batch = {
-  id: string;
+  id: string; // batchId convertido a string
   quantityAnimals: number;
   averageWeight: number;
-  entryDate: string;
+  entryDate: string; // Fecha formateada para mostrar
   batchAge: number;
   animalsRemoved: number;
-  specieId: string; 
-  specieName?: string; 
+  specieId: string; // specieId convertido a string
+  specieName?: string; // Se llenará en el componente Producto.tsx
 };
 
-// --- NUEVO ---
-// Tipo explícito para los datos que se envían a la API de lotes.
-// Esto representa el contrato exacto con el endpoint de creación de lotes.
 export type CreateBatchPayload = {
   quantityAnimals: number;
   averageWeight: number;
-  entryDate: string; // Debe estar en formato "YYYY-MM-DD"
+  entryDate: string; // Formato "YYYY-MM-DD" para enviar al backend
   batchAge: number;
-  specieId: string;
+  specieId: string; // ID de la especie como string (se convertirá a número antes de enviar)
 };
 
-
-// --- MODIFICADO ---
-// Función para convertir la respuesta del backend al formato del frontend
 const mapBatchResponseToBatch = (batch: BatchResponse): Batch => {
   return {
     id: batch.batchId.toString(),
     quantityAnimals: batch.quantityAnimalsPerBatch,
     averageWeight: batch.averageWeightPerAnimal,
-    // Formatea la fecha para visualización
     entryDate: new Date(batch.entryDate).toLocaleDateString('es-EC', { year: 'numeric', month: '2-digit', day: '2-digit' }),
     batchAge: batch.batchAge,
     animalsRemoved: batch.animalsRemoved,
-    // Añadimos un valor por defecto. El store se encargará de poner el nombre correcto al crear.
-    specieName: 'No especificada',
     specieId: batch.specieId.toString(),
-  }
-}
+  };
+};
 
 export const batchService = {
   async getAll(): Promise<Batch[]> {
     try {
+      console.log("batchService: Solicitando todos los lotes...");
       const response = await batchApiInstance.get<BatchResponse[]>("/batches/");
       return response.data.map(mapBatchResponseToBatch);
     } catch (error) {
-      console.error("Error al obtener lotes:", error);
+      console.error("Error en batchService.getAll:", error);
       throw error;
     }
   },
@@ -70,40 +58,36 @@ export const batchService = {
       const response = await batchApiInstance.get<BatchResponse>(`/batches/${id}`);
       return mapBatchResponseToBatch(response.data);
     } catch (error) {
-      console.error(`Error al obtener lote con ID ${id}:`, error);
+      console.error(`Error en batchService.getById con ID ${id}:`, error);
       throw error;
     }
   },
   
-  // Método 'create' 
   async create(batchPayload: CreateBatchPayload): Promise<Batch> {
     try {
-      // Mapeamos los datos de payload al formato que el backend espera (DTO).
       const batchDataForApi = {
         quantityAnimalsPerBatch: batchPayload.quantityAnimals,
         averageWeightPerAnimal: batchPayload.averageWeight,
-        entryDate: batchPayload.entryDate,
+        entryDate: batchPayload.entryDate, // Debe ser "YYYY-MM-DD"
         batchAge: batchPayload.batchAge,
         specieId: parseInt(batchPayload.specieId, 10),
       };
-
-      console.log("Enviando datos de lote al backend:", batchDataForApi);
+      console.log("batchService: Enviando para crear lote:", batchDataForApi);
       const response = await batchApiInstance.post<BatchResponse>("/batches/", batchDataForApi);
-      
       return mapBatchResponseToBatch(response.data);
     } catch (error) {
-      console.error("Error al crear lote:", error);
+      console.error("Error en batchService.create:", error);
       throw error;
     }
   },
 
-  async update(id: string, batch: Partial<Omit<Batch, "id" | "entryDate" | "animalsRemoved">>): Promise<Batch> {
+  async update(id: string, batch: Partial<Omit<Batch, "id" | "entryDate" | "animalsRemoved" | "specieId" | "specieName">>): Promise<Batch> {
     try {
-      // Mapea solo los campos que se pueden actualizar según el backend
       const batchDataToUpdate: {
         quantityAnimalsPerBatch?: number;
         averageWeightPerAnimal?: number;
         batchAge?: number;
+        // specieId no se actualiza directamente aquí, se asume que es parte de la creación del producto
       } = {};
 
       if (batch.quantityAnimals !== undefined) {
@@ -119,7 +103,7 @@ export const batchService = {
       const response = await batchApiInstance.put<BatchResponse>(`/batches/${id}`, batchDataToUpdate);
       return mapBatchResponseToBatch(response.data);
     } catch (error) {
-      console.error(`Error al actualizar lote con ID ${id}:`, error);
+      console.error(`Error en batchService.update con ID ${id}:`, error);
       throw error;
     }
   },
@@ -128,7 +112,7 @@ export const batchService = {
     try {
       await batchApiInstance.delete(`/batches/${id}`);
     } catch (error) {
-      console.error(`Error al eliminar lote con ID ${id}:`, error);
+      console.error(`Error en batchService.delete con ID ${id}:`, error);
       throw error;
     }
   },
@@ -140,7 +124,7 @@ export const batchService = {
       );
       return mapBatchResponseToBatch(response.data);
     } catch (error) {
-      console.error(`Error al remover animales del lote con ID ${id}:`, error);
+      console.error(`Error en batchService.removeAnimals del lote con ID ${id}:`, error);
       throw error;
     }
   },

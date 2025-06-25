@@ -1,6 +1,5 @@
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from "axios";
 
-// La URL base del microservicio que maneja los productos/especies
 const PRODUCT_API_URL = "http://localhost:7777/api/products/api";
 
 export const productApiInstance: AxiosInstance = axios.create({
