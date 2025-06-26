@@ -1,33 +1,17 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+
+// Stores
 import { useProductStore, type ProductState } from '../../store/product-store';
-import { FaArrowLeft, FaChevronDown, FaChevronUp, FaFilter } from 'react-icons/fa';
+import { useDailyRecordStore, type DailyRecordState } from '../../store/dailyRecord-store';
+
+// Types y Servicios
+import type { CreateDailyRecordPayload, DailyRecord } from '../../service/dailyRecord-service';
 import type { ProductPhase } from '../../service/product-service';
 
-type HistoryEntry = {
-  id: number;
-  date: string;
-  foodSupplied: number;
-  mortality: number;
-};
-
-const generateMockHistory = (count: number): HistoryEntry[] => {
-  return Array.from({ length: count }, (_, i) => ({
-    id: i,
-    date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES'),
-    foodSupplied: Math.floor(Math.random() * 500) + 100,
-    mortality: Math.floor(Math.random() * 20),
-  }));
-};
-
-const FULL_MOCK_HISTORY = generateMockHistory(100);
-const ITEMS_PER_PAGE = 20;
-
-type Estanque = string;
-const generarOpcionesEstanques = (etapa: ProductPhase): Estanque[] => {
-  const prefix = etapa.charAt(0).toUpperCase();
-  return Array.from({ length: 4 }, (_, i) => `${prefix}${i + 1}`);
-};
+// Iconos
+import { FaArrowLeft, FaChevronDown, FaChevronUp, FaFilter } from 'react-icons/fa';
 
 // --- COMPONENTES REUTILIZABLES ---
 
@@ -38,10 +22,10 @@ const ReadOnlyField: React.FC<{ label: string; id: string; value: string | numbe
   </div>
 );
 
-const EditableField: React.FC<{ label: string; id: string; value: string | number; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; type?: 'text' | 'number'; placeholder?: string }> = ({ label, id, value, onChange, type = 'text', placeholder = '0' }) => (
-  <div className="flex w-full items-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+const EditableField: React.FC<{ label: string; id: string; value: string | number; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; type?: 'text' | 'number' | 'date'; placeholder?: string; readOnly?: boolean; className?: string }> = ({ label, id, value, onChange, type = 'text', placeholder = '0', readOnly = false, className = '' }) => (
+  <div className={`flex w-full items-center gap-3 rounded-xl border border-gray-300 ${readOnly ? 'bg-gray-50' : 'bg-white focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500'} px-4 py-3 shadow-sm ${className}`}>
     <label htmlFor={id} className="whitespace-nowrap font-medium text-gray-600">{label}</label>
-    <input type={type} id={id} name={id} value={value} onChange={onChange} placeholder={placeholder} className="w-full border-none bg-transparent p-0 text-right text-gray-800 focus:outline-none focus:ring-0" />
+    <input type={type} id={id} name={id} value={value} onChange={onChange} placeholder={placeholder} readOnly={readOnly} className={`w-full border-none bg-transparent p-0 ${readOnly ? 'text-gray-800' : 'text-right text-gray-800'} focus:outline-none focus:ring-0`} />
   </div>
 );
 
@@ -60,13 +44,23 @@ const LoadingSpinner = () => (
   </div>
 );
 
+// Obtener la fecha actual en formato YYYY-MM-DD
+const getTodayString = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = (today.getMonth() + 1).toString().padStart(2, '0');
+  const day = today.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+
 // ------ COMPONENTE PRINCIPAL ------
 
 const PoundControl = () => {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
 
-  // Estados del formulario
+  // --- ESTADOS DEL FORMULARIO ---
   const [foodSupplied, setFoodSupplied] = useState('');
   const [mortality, setMortality] = useState('');
   const [transferredAnimals, setTransferredAnimals] = useState('');
@@ -74,77 +68,78 @@ const PoundControl = () => {
   const [destinationPond, setDestinationPond] = useState('A1');
   const [isTransfersVisible, setIsTransfersVisible] = useState(false);
   const [observations, setObservations] = useState('');
-
-  // Estados para la tabla de historial con scroll infinito
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isInitialLoading, setIsInitialLoading] = useState(true); 
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [filterText, setFilterText] = useState('');
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // <-- DATOS Y ACCIONES DEL STORE DE ZUSTAND -->
+  const [recordDate, setRecordDate] = useState(getTodayString());
+  
+  // --- STORES ---
   const product = useProductStore((state: ProductState) => state.products.find(p => p.id.toString() === productId));
   const isLoadingProduct = useProductStore((state: ProductState) => state.isLoading);
   const fetchProducts = useProductStore((state: ProductState) => state.fetchProducts);
+  
+  const createDailyRecord = useDailyRecordStore((state: DailyRecordState) => state.createDailyRecord);
+  const fetchDailyRecordsByBatchId = useDailyRecordStore((state: DailyRecordState) => state.fetchDailyRecordsByBatchId);
+  const dailyRecordsByBatch = useDailyRecordStore((state: DailyRecordState) => state.dailyRecordsByBatch);
+  const isLoadingDailyRecord = useDailyRecordStore((state: DailyRecordState) => state.isLoading);
+  
+  // --- LÓGICA DE DATOS ---
+  const getBatchIdFromProduct = useCallback(() => {
+    if (!product?.name) return null;
+    const match = product.name.match(/\(Origen Batch (\d+)\)/);
+    return match ? parseInt(match[1], 10) : null;
+  }, [product]);
+
+  const batchId = getBatchIdFromProduct();
 
   useEffect(() => {
     if (!product) {
       fetchProducts();
     }
-  }, [product, fetchProducts, productId]);
-
-  const fetchMoreData = useCallback(() => {
-    if (isLoadingMore) return;
-    setIsLoadingMore(true);
-
-    setTimeout(() => {
-      const filteredData = FULL_MOCK_HISTORY.filter(item => item.date.includes(filterText));
-      const newItems = filteredData.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-
-      if (newItems.length > 0) {
-        setHistory(prev => [...prev, ...newItems]);
-        setPage(prev => prev + 1);
-      }
-
-      const currentTotal = (page === 1 ? 0 : history.length) + newItems.length;
-      if (currentTotal >= filteredData.length) {
-        setHasMore(false);
-      }
-
-      setIsLoadingMore(false);
-      if (page === 1) setIsInitialLoading(false);
-    }, 1000);
-  }, [isLoadingMore, page, filterText, history.length]);
-
+  }, [product, fetchProducts]);
+  
   useEffect(() => {
-    setHistory([]);
-    setPage(1);
-    setHasMore(true);
-    setIsInitialLoading(true);
-  }, [filterText]);
-
-  useEffect(() => {
-    if (isInitialLoading && page === 1 && hasMore) {
-      fetchMoreData();
+    if (batchId) {
+      if (!dailyRecordsByBatch[batchId]) {
+        fetchDailyRecordsByBatchId(batchId);
+      }
     }
-  }, [isInitialLoading, page, hasMore, fetchMoreData])
+  }, [batchId, dailyRecordsByBatch, fetchDailyRecordsByBatchId]);
+  
+  const handleClearForm = useCallback(() => {
+    setFoodSupplied('');
+    setMortality('');
+    setObservations('');
+    setTransferredAnimals('');
+    setIsTransfersVisible(false);
+    setRecordDate(getTodayString());
+  }, []);
 
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    const handleScroll = () => {
-      if (!container) return;
-      if (container.scrollHeight - container.scrollTop <= container.clientHeight + 100) {
-        if (hasMore && !isLoadingMore) fetchMoreData();
-      }
+  const handleRegister = async () => {
+    if (!product || !batchId) {
+      toast.error("No se pudo identificar el producto o lote de origen. Por favor, recargue la página.");
+      return;
+    }
+    if (!foodSupplied.trim() || !mortality.trim() || !recordDate) {
+      toast.error("La fecha, el alimento suministrado y la mortalidad son campos obligatorios.");
+      return;
+    }
+    
+    const foodInKg = Number(foodSupplied) / 1000;
+      const payload: CreateDailyRecordPayload = {
+      batchId: batchId,
+      pondIdentifier: product.pondIdentifier,
+      recordDate: recordDate,
+      foodSuppliedKg: foodInKg,
+      mortality: Number(mortality),
     };
-    container?.addEventListener('scroll', handleScroll);
-    return () => container?.removeEventListener('scroll', handleScroll);
-  }, [hasMore, isLoadingMore, fetchMoreData]);
 
-  // Manejadores de eventos
+    const newRecord = await createDailyRecord(payload);
+    if (newRecord) {
+      handleClearForm();
+    }
+  };
+
+  const handleEdit = () => console.log("Botón Editar presionado.");
+  
   const handlePhaseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newPhase = e.target.value as ProductPhase;
     setDestinationPhase(newPhase);
@@ -152,24 +147,24 @@ const PoundControl = () => {
     setDestinationPond(newPonds[0] || '');
   };
 
-  const handleRegister = () => {
-    const formData = {
-      productId,
-      date: new Date().toISOString().split('T')[0],
-      foodSupplied: Number(foodSupplied) || 0,
-      mortality: Number(mortality) || 0,
-      observations,
-      transfer: isTransfersVisible && Number(transferredAnimals) > 0 ? { amount: Number(transferredAnimals), destinationPhase, destinationPond } : null,
-    };
-    console.log("Datos a registrar:", formData);
+  const generarOpcionesEstanques = (etapa: ProductPhase): string[] => {
+    const prefix = etapa.charAt(0).toUpperCase();
+    return Array.from({ length: 4 }, (_, i) => `${prefix}${i + 1}`);
   };
 
-  const handleEdit = () => console.log("Botón Editar presionado.");
+  // --- DATOS PARA RENDERIZAR ---
+  const history: DailyRecord[] = useMemo(() => (batchId ? dailyRecordsByBatch[batchId] : []) || [], [batchId, dailyRecordsByBatch]);
+  const filteredHistory = useMemo(() => {
+    if (!filterText) return history;
+    return history.filter(item => 
+      new Date(item.recordDate).toLocaleDateString('es-ES').includes(filterText)
+    );
+  }, [history, filterText]);
 
-  if (isLoadingProduct && !product) return <div className="p-8 text-center">Cargando datos del estanque...</div>;
+  // --- RENDERIZADO DEL COMPONENTE ---
+  if (isLoadingProduct && !product) return <LoadingSpinner />;
   if (!product) return <div className="p-8 text-center text-red-500">No se encontró el producto con ID: {productId}. <button onClick={() => navigate('/producto')} className="ml-2 text-blue-500 underline">Volver</button></div>;
 
-  const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
   const phaseOptions = [{ value: 'ALEVINAJE', label: 'Alevinaje' }, { value: 'DEDINAJE', label: 'Dedinaje' }, { value: 'LEVANTE', label: 'Levante' }, { value: 'ENGORDE', label: 'Engorde' }];
   const pondOptions = generarOpcionesEstanques(destinationPhase).map(pond => ({ value: pond, label: pond }));
 
@@ -184,7 +179,18 @@ const PoundControl = () => {
         <div className="flex flex-col gap-4 md:flex-row">
           <ReadOnlyField label="Id Lote:" id="idLote" value={product.name} />
           <ReadOnlyField label="Id Estanque:" id="idEstanque" value={product.pondIdentifier} />
-          <ReadOnlyField label="Fecha:" id="fecha" value={currentDate} />
+
+          <div className="flex flex-1 items-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+            <label htmlFor="fecha" className="whitespace-nowrap font-medium text-gray-600">Fecha:</label>
+            <input 
+              type="date" 
+              id="fecha" 
+              name="fecha" 
+              value={recordDate} 
+              onChange={(e) => setRecordDate(e.target.value)} 
+              className="w-full border-none bg-transparent p-0 text-gray-800 focus:outline-none focus:ring-0" 
+            />
+          </div>
         </div>
         <EditableField label="Alimento suministrado (gramos)" id="foodSupplied" type="number" value={foodSupplied} onChange={(e) => setFoodSupplied(e.target.value)} />
         <EditableField label="Mortalidad retirada" id="mortality" type="number" value={mortality} onChange={(e) => setMortality(e.target.value)} />
@@ -206,49 +212,57 @@ const PoundControl = () => {
           </div>
         </div>
       </div>
-
       <div className="mb-6 rounded-lg border-slate-600 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-4">
           <label htmlFor="observations" className="font-medium text-gray-700">Observaciones:</label>
           <textarea id="observations" rows={5} className="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Añadir observaciones sobre el control diario..." value={observations} onChange={(e) => setObservations(e.target.value)} />
           <div className="flex justify-end gap-4">
-            <button onClick={handleRegister} className="rounded-lg bg-blue-500 px-6 py-2 font-semibold text-white shadow-sm transition-colors hover:bg-blue-600">Registrar</button>
+            <button onClick={handleRegister} className="rounded-lg bg-blue-500 px-6 py-2 font-semibold text-white shadow-sm transition-colors hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed" disabled={isLoadingDailyRecord}>
+              {isLoadingDailyRecord ? 'Registrando...' : 'Registrar'}
+            </button>
             <button onClick={handleEdit} className="rounded-lg bg-green-500 px-6 py-2 font-semibold text-white shadow-sm transition-colors hover:bg-green-600">Editar</button>
           </div>
         </div>
       </div>
-
       <div className="mt-6 rounded-lg border-slate-700 bg-white p-4 shadow-sm">
         <h3 className="mb-4 text-lg font-semibold text-gray-700">Historial de Controles</h3>
         <div className="relative mb-4">
           <span className="absolute inset-y-0 left-0 flex items-center pl-3"><FaFilter className="text-gray-400" /></span>
           <input type="text" placeholder="Filtrar por fecha..." value={filterText} onChange={(e) => setFilterText(e.target.value)} className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-10 pr-4 focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
         </div>
-        <div ref={scrollContainerRef} className="h-72 overflow-y-auto rounded-lg border-slate-600
-        ">
-          {isInitialLoading ? <LoadingSpinner /> : (
+        <div className="h-72 overflow-y-auto rounded-lg border">
+          {isLoadingDailyRecord && history.length === 0 ? (
+            <LoadingSpinner />
+          ) : (
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="sticky top-0 bg-gray-100 z-10">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Fecha</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Alimento Suministrado (g)</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Alimento Suministrado (Kg)</th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Mortalidad</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {history.map(item => (
-                  <tr key={item.id}>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{item.date}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{item.foodSupplied}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{item.mortality}</td>
+                {filteredHistory.length > 0 ? (
+                  filteredHistory.map(item => (
+                    <tr key={item.id}>
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                        {new Date(item.recordDate).toLocaleDateString('es-ES', { timeZone: 'UTC' })}
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{item.foodSuppliedKg}</td>
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{item.mortality}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} className="p-4 text-center text-sm text-gray-500">
+                      {filterText ? 'No se encontraron registros con el filtro actual.' : 'No hay registros en el historial para este lote.'}
+                    </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           )}
-          {isLoadingMore && <LoadingSpinner />}
-          {!hasMore && history.length > 0 && <p className="p-4 text-center text-sm text-gray-500">No hay más registros para mostrar.</p>}
-          {!isInitialLoading && !hasMore && history.length === 0 && <p className="p-4 text-center text-sm text-gray-500">No se encontraron registros con el filtro actual.</p>}
         </div>
       </div>
     </div>

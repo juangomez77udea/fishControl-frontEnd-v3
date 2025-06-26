@@ -44,7 +44,6 @@ const mapBatchResponseToBatch = (batch: BatchResponse): Batch => {
 export const batchService = {
   async getAll(): Promise<Batch[]> {
     try {
-      console.log("batchService: Solicitando todos los lotes...");
       const response = await batchApiInstance.get<BatchResponse[]>("/batches/");
       return response.data.map(mapBatchResponseToBatch);
     } catch (error) {

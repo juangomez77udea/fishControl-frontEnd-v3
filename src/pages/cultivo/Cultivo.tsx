@@ -1,5 +1,3 @@
-// src/components/Cultivo.tsx
-
 import { useEffect, useState, useMemo } from "react"
 import { useForm, Controller } from "react-hook-form"
 import {
@@ -68,7 +66,6 @@ export default function Cultivo() {
   }, [isAuthenticated, fetchBatches, fetchSpecies, hasAttemptedLoad])
 
   const enrichedBatches = useMemo(() => {
-    // Siempre devolver un array de EnrichedBatch, incluso si species no está cargado
     const speciesMap = new Map(species.map(s => [s.id, s.name]));
     return batches.map(batch => ({
       ...batch,
@@ -100,15 +97,11 @@ export default function Cultivo() {
       return
     }
 
-    const selectedSpecie = species.find(s => s.id === data.specieId);
-
     createBatch({
       quantityAnimals: data.quantityAnimals,
       averageWeight: data.averageWeight,
       entryDate: data.entryDate,
       batchAge: data.batchAge,
-      specieName: selectedSpecie?.name || "",
-      animalsRemoved: 0,
       specieId: data.specieId,
     })
 

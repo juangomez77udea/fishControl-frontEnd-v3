@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PiPencilSimpleLineFill } from "react-icons/pi";
 import { MdArrowForward } from "react-icons/md";
 import { toast } from 'react-toastify';
 
@@ -39,7 +38,6 @@ const Producto: React.FC = () => {
   const fetchSpeciesFromStore = useSpecieStore((state: SpecieState) => state.fetchSpecies);
   const isLoadingSpecies = useSpecieStore((state: SpecieState) => state.isLoading);
 
-  // <-- 3. OBTENER PRODUCTOS Y SU ACCIÓN DE FETCH -->
   const productsFromStore = useProductStore((state: ProductState) => state.products);
   const fetchProducts = useProductStore((state: ProductState) => state.fetchProducts);
   
@@ -160,6 +158,7 @@ const Producto: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 bg-gray-50 rounded-lg shadow-md">
+      {/* FORMULARIO DE REGISTRO  */}
       <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Registrar Producto en Etapa/Estanque</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -222,6 +221,8 @@ const Producto: React.FC = () => {
           </button>
         </div>
       </div>
+      
+      {/* TABLA DE LOTES DISPONIBLES */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Lotes Disponibles</h2>
         <div className="overflow-x-auto">
@@ -234,7 +235,7 @@ const Producto: React.FC = () => {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cant. Animales</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Ingreso (Sistema)</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edad Lote (días)</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -254,18 +255,14 @@ const Producto: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{lote.entryDate}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{lote.batchAge}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex space-x-2">
-                        <div className="relative group"><button title="Editar Lote (Batch)" className="px-2 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 text-xs flex items-center justify-center"><PiPencilSimpleLineFill className="text-sm" /></button></div>
-                        {/* <-- 5. BOTÓN ACTUALIZADO --> */}
-                        <div className="relative group">
-                          <button 
-                            title="Ir al estanque de este lote (si existe)" 
-                            onClick={() => handleNavegarAEstanque(lote.id)}
-                            className="px-2 py-2 bg-green-500 text-white rounded-md hover:bg-green-400 text-xs flex items-center justify-center"
-                          >
-                            <MdArrowForward className="text-sm" />
-                          </button>
-                        </div>
+                      <div className="flex items-center justify-center">
+                        <button 
+                          title="Ir al estanque de este lote (si existe)" 
+                          onClick={() => handleNavegarAEstanque(lote.id)}
+                          className="p-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center"
+                        >
+                          <MdArrowForward className="text-lg" />
+                        </button>
                       </div>
                     </td>
                   </tr>

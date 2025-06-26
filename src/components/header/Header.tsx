@@ -18,11 +18,8 @@ const Header: FC<HeaderProps> = ({ onLogout }) => {
   const user = useAuthStore((state) => state.user)
   const hasAdminRole = useAuthStore((state) => state.hasRole("ROLE_ADMIN"))
 
-  // Log para depuración - ver los roles del usuario actual
+
   useEffect(() => {
-    console.log("Usuario actual:", user)
-    console.log("Roles del usuario:", user?.roles)
-    console.log("¿Tiene rol de admin?", hasAdminRole)
   }, [user, hasAdminRole])
 
   // Filtrar los elementos de navegación según el rol
@@ -31,7 +28,7 @@ const Header: FC<HeaderProps> = ({ onLogout }) => {
 
     // Botones si el usuario es administrador
     if (hasAdminRole) {
-      console.log("Añadiendo botones de administrador al menú")
+
       items.push(
         {
         title: "REGISTRAR USUARIO",

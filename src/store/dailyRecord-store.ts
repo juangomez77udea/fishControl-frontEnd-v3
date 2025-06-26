@@ -1,12 +1,11 @@
-// src/store/dailyRecord-store.ts
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { toast } from "react-toastify";
 import { isAxiosError } from "axios";
 import { dailyRecordService, type DailyRecord, type CreateDailyRecordPayload } from "../service/dailyRecord-service";
 
-export type DailyRecordState = { // Asegúrate de EXPORTAR este tipo
-  dailyRecordsByBatch: Record<string, DailyRecord[]>; // Para almacenar registros por batchId
+export type DailyRecordState = {
+  dailyRecordsByBatch: Record<string, DailyRecord[]>;
   isLoading: boolean;
   error: string | null;
   fetchDailyRecordsByBatchId: (batchId: string | number) => Promise<void>;

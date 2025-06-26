@@ -48,16 +48,13 @@ const Login = () => {
 
         // Decodificar el token para obtener los roles
         const decodedToken = decodeJwt(response.token)
-        console.log("Token decodificado:", decodedToken)
 
         // Obtener los roles del token decodificado
         const rolesFromToken = decodedToken?.roles || []
-        console.log("Roles obtenidos del token:", rolesFromToken)
 
         // Los roles ya vienen con el formato ROLE_XXX desde el backend
         const userRoles = rolesFromToken as UserRole[]
-        console.log("Roles finales para el store:", userRoles)
-
+       
         // Guardar la información del usuario en el store
         setUser({
           username: response.username,

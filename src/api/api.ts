@@ -6,9 +6,7 @@ const API_URL: string = "http://localhost:7777/user-service/api"
 // Función para iniciar sesión
 export const login = async (username: string, password: string): Promise<AuthResponse | null> => {
   try {
-    console.log("Enviando solicitud de login con:", { username, password })
     const response = await axios.post<AuthResponse>(`${API_URL}/login`, { username, password })
-    console.log("Respuesta completa del servidor:", response.data)
     return response.data
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -18,7 +16,7 @@ export const login = async (username: string, password: string): Promise<AuthRes
     } else {
       console.error("Error desconocido en login:", error)
     }
-    throw error; // Re-lanzar el error para manejarlo en el componente
+    throw error;
   }
 }
 
