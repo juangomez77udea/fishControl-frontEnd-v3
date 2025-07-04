@@ -5,19 +5,18 @@ import { batchService, type Batch, type CreateBatchPayload } from "../service/ba
 import { toast } from "react-toastify";
 import { isAxiosError } from "axios";
 
-// --- ESTA ES LA LÍNEA CLAVE ---
-export type BatchState = { // <--- DEBE TENER 'export'
+export type BatchState = { 
   batches: Batch[];
   selectedBatchId: string | null;
   isLoading: boolean;
   error: string | null;
   fetchBatches: () => Promise<void>;
   selectBatch: (id: string | null) => void;
-  // Ajusta el tipo del parámetro 'batchData' si es necesario
   createBatch: (batchData: CreateBatchPayload) => Promise<Batch | null>; 
   updateBatch: (id: string, batch: Partial<Omit<Batch, "id" | "entryDate" | "animalsRemoved" | "specieId" | "specieName">>) => Promise<void>;
   deleteBatch: (id: string) => Promise<void>;
   removeAnimals: (id: string, animalsToRemove: number) => Promise<void>;
+  updateBatchWeight: (batchId: number, newWeight: number) => Promise<boolean>;
 };
 
 export const useBatchStore = create<BatchState>()(
@@ -131,6 +130,32 @@ export const useBatchStore = create<BatchState>()(
             }
           }
         },
+
+        updateBatchWeight: async (batchId, newWeight) => {
+          try {
+            set({ isLoading: true, error: null });
+            await batchService.updateWeight(batchId, newWeight);
+            
+            // Actualizar el estado local para reflejar el cambio inmediatamente
+            set(state => ({
+              batches: state.batches.map(batch => 
+                batch.id === batchId.toString() 
+                  ? { ...batch, averageWeight: newWeight } 
+                  : batch
+              ),
+              isLoading: false,
+            }));
+            toast.success("Peso promedio actualizado correctamente.");
+            return true;
+          } catch (error) {
+            const errorMessage = "Error al actualizar el peso promedio.";
+            console.error(errorMessage, error);
+            set({ isLoading: false, error: errorMessage });
+            toast.error(errorMessage);
+            return false;
+          }
+        },
+
       }),
       {
         name: "batch-storage",

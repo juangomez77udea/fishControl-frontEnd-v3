@@ -2,18 +2,15 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-// Stores
-import { useProductStore, type ProductState } from '../../store/product-store';
-import { useDailyRecordStore, type DailyRecordState } from '../../store/dailyRecord-store';
+import { useProductStore } from '../../store/product-store';
+import { useDailyRecordStore } from '../../store/dailyRecord-store';
+import { useBatchStore } from '../../store/batch-store';
+import { useSupplyStore } from '../../store/supply-store';
 
-// Types y Servicios
 import type { CreateDailyRecordPayload, DailyRecord } from '../../service/dailyRecord-service';
 import type { ProductPhase } from '../../service/product-service';
 
-// Iconos
-import { FaArrowLeft, FaChevronDown, FaChevronUp, FaFilter } from 'react-icons/fa';
-
-// --- COMPONENTES REUTILIZABLES ---
+import { FaArrowLeft, FaChevronDown, FaChevronUp, FaFilter, FaWeightHanging } from 'react-icons/fa';
 
 const ReadOnlyField: React.FC<{ label: string; id: string; value: string | number }> = ({ label, id, value }) => (
   <div className="flex flex-1 items-center gap-3 rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 shadow-sm">
@@ -29,10 +26,10 @@ const EditableField: React.FC<{ label: string; id: string; value: string | numbe
   </div>
 );
 
-const SelectField: React.FC<{ label: string; id: string; value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; options: { value: string; label: string }[] }> = ({ label, id, value, onChange, options }) => (
-  <div className="flex flex-col gap-1">
-    <label htmlFor={id} className="font-medium text-gray-600">{label}</label>
-    <select id={id} name={id} value={value} onChange={onChange} className="w-full rounded-md border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+const SelectField: React.FC<{ label: string; id: string; value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; options: { value: string; label: string }[]; disabled?: boolean; }> = ({ label, id, value, onChange, options, disabled = false }) => (
+  <div className="flex flex-col gap-1 w-full">
+    <label htmlFor={id} className="font-medium text-gray-700">{label}</label>
+    <select id={id} name={id} value={value} onChange={onChange} disabled={disabled} className="w-full rounded-md border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-slate-600">
       {options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
     </select>
   </div>
@@ -44,7 +41,6 @@ const LoadingSpinner = () => (
   </div>
 );
 
-// Obtener la fecha actual en formato YYYY-MM-DD
 const getTodayString = () => {
   const today = new Date();
   const year = today.getFullYear();
@@ -53,35 +49,40 @@ const getTodayString = () => {
   return `${year}-${month}-${day}`;
 };
 
-
-// ------ COMPONENTE PRINCIPAL ------
-
 const PoundControl = () => {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
 
-  // --- ESTADOS DEL FORMULARIO ---
+  const [selectedFood, setSelectedFood] = useState<string>('');
   const [foodSupplied, setFoodSupplied] = useState('');
   const [mortality, setMortality] = useState('');
-  const [transferredAnimals, setTransferredAnimals] = useState('');
-  const [destinationPhase, setDestinationPhase] = useState<ProductPhase>('ALEVINAJE');
-  const [destinationPond, setDestinationPond] = useState('A1');
-  const [isTransfersVisible, setIsTransfersVisible] = useState(false);
   const [observations, setObservations] = useState('');
   const [filterText, setFilterText] = useState('');
   const [recordDate, setRecordDate] = useState(getTodayString());
   
-  // --- STORES ---
-  const product = useProductStore((state: ProductState) => state.products.find(p => p.id.toString() === productId));
-  const isLoadingProduct = useProductStore((state: ProductState) => state.isLoading);
-  const fetchProducts = useProductStore((state: ProductState) => state.fetchProducts);
+  const [transferredAnimals, setTransferredAnimals] = useState('');
+  const [destinationPhase, setDestinationPhase] = useState<ProductPhase>('ALEVINAJE');
+  const [destinationPond, setDestinationPond] = useState('A1');
+  const [isTransfersVisible, setIsTransfersVisible] = useState(false);
   
-  const createDailyRecord = useDailyRecordStore((state: DailyRecordState) => state.createDailyRecord);
-  const fetchDailyRecordsByBatchId = useDailyRecordStore((state: DailyRecordState) => state.fetchDailyRecordsByBatchId);
-  const dailyRecordsByBatch = useDailyRecordStore((state: DailyRecordState) => state.dailyRecordsByBatch);
-  const isLoadingDailyRecord = useDailyRecordStore((state: DailyRecordState) => state.isLoading);
+  const [newAverageWeight, setNewAverageWeight] = useState('');
+  const [isWeightUpdateVisible, setIsWeightUpdateVisible] = useState(false);
   
-  // --- LÓGICA DE DATOS ---
+  const product = useProductStore((state) => state.products.find(p => p.id.toString() === productId));
+  const fetchProducts = useProductStore((state) => state.fetchProducts);
+  
+  const createDailyRecord = useDailyRecordStore((state) => state.createDailyRecord);
+  const fetchDailyRecordsByBatchId = useDailyRecordStore((state) => state.fetchDailyRecordsByBatchId);
+  const dailyRecordsByBatch = useDailyRecordStore((state) => state.dailyRecordsByBatch);
+  const isLoadingDailyRecord = useDailyRecordStore((state) => state.isLoading);
+  
+  const updateBatchWeight = useBatchStore((state) => state.updateBatchWeight);
+  const isUpdatingWeight = useBatchStore((state) => state.isLoading);
+
+  const foodSupplies = useSupplyStore((state) => state.foodSupplies);
+  const fetchFoodSupplies = useSupplyStore((state) => state.fetchFoodSupplies);
+  const isLoadingSupplies = useSupplyStore((state) => state.isLoading);
+
   const getBatchIdFromProduct = useCallback(() => {
     if (!product?.name) return null;
     const match = product.name.match(/\(Origen Batch (\d+)\)/);
@@ -94,7 +95,9 @@ const PoundControl = () => {
     if (!product) {
       fetchProducts();
     }
-  }, [product, fetchProducts]);
+    // Llamar a fetchFoodSupplies solo una vez al montar el componente
+    fetchFoodSupplies();
+  }, [fetchProducts, fetchFoodSupplies]);
   
   useEffect(() => {
     if (batchId) {
@@ -105,11 +108,14 @@ const PoundControl = () => {
   }, [batchId, dailyRecordsByBatch, fetchDailyRecordsByBatchId]);
   
   const handleClearForm = useCallback(() => {
+    setSelectedFood('');
     setFoodSupplied('');
     setMortality('');
     setObservations('');
     setTransferredAnimals('');
     setIsTransfersVisible(false);
+    setNewAverageWeight('');
+    setIsWeightUpdateVisible(false);
     setRecordDate(getTodayString());
   }, []);
 
@@ -118,18 +124,19 @@ const PoundControl = () => {
       toast.error("No se pudo identificar el producto o lote de origen. Por favor, recargue la página.");
       return;
     }
-    if (!foodSupplied.trim() || !mortality.trim() || !recordDate) {
-      toast.error("La fecha, el alimento suministrado y la mortalidad son campos obligatorios.");
+    if (!selectedFood || !foodSupplied.trim() || !mortality.trim() || !recordDate) {
+      toast.error("El alimento, la cantidad, la mortalidad y la fecha son campos obligatorios.");
       return;
     }
     
     const foodInKg = Number(foodSupplied) / 1000;
-      const payload: CreateDailyRecordPayload = {
+    const payload: CreateDailyRecordPayload = {
       batchId: batchId,
       pondIdentifier: product.pondIdentifier,
       recordDate: recordDate,
       foodSuppliedKg: foodInKg,
       mortality: Number(mortality),
+      foodSupplyId: Number(selectedFood),
     };
 
     const newRecord = await createDailyRecord(payload);
@@ -152,7 +159,23 @@ const PoundControl = () => {
     return Array.from({ length: 4 }, (_, i) => `${prefix}${i + 1}`);
   };
 
-  // --- DATOS PARA RENDERIZAR ---
+  const handleUpdateWeight = async () => {
+    if (!batchId) {
+      toast.error("No se ha podido identificar el lote.");
+      return;
+    }
+    if (!newAverageWeight || Number(newAverageWeight) <= 0) {
+      toast.error("Por favor, ingrese un peso promedio válido.");
+      return;
+    }
+    
+    const success = await updateBatchWeight(batchId, Number(newAverageWeight));
+    if (success) {
+      setNewAverageWeight('');
+      setIsWeightUpdateVisible(false);
+    }
+  };
+
   const history: DailyRecord[] = useMemo(() => (batchId ? dailyRecordsByBatch[batchId] : []) || [], [batchId, dailyRecordsByBatch]);
   const filteredHistory = useMemo(() => {
     if (!filterText) return history;
@@ -160,10 +183,22 @@ const PoundControl = () => {
       new Date(item.recordDate).toLocaleDateString('es-ES').includes(filterText)
     );
   }, [history, filterText]);
+  
+  const foodOptions = useMemo(() => {
+    if (!foodSupplies) return [];
+    return foodSupplies.map(supply => ({
+      value: supply.id.toString(),
+      label: supply.suppliesName,
+    }));
+  }, [foodSupplies]);
 
-  // --- RENDERIZADO DEL COMPONENTE ---
-  if (isLoadingProduct && !product) return <LoadingSpinner />;
-  if (!product) return <div className="p-8 text-center text-red-500">No se encontró el producto con ID: {productId}. <button onClick={() => navigate('/producto')} className="ml-2 text-blue-500 underline">Volver</button></div>;
+  if (!product) {
+      return (
+        <div className="flex h-screen items-center justify-center">
+            <LoadingSpinner />
+        </div>
+      );
+  }
 
   const phaseOptions = [{ value: 'ALEVINAJE', label: 'Alevinaje' }, { value: 'DEDINAJE', label: 'Dedinaje' }, { value: 'LEVANTE', label: 'Levante' }, { value: 'ENGORDE', label: 'Engorde' }];
   const pondOptions = generarOpcionesEstanques(destinationPhase).map(pond => ({ value: pond, label: pond }));
@@ -171,7 +206,7 @@ const PoundControl = () => {
   return (
     <div className="mx-auto w-full max-w-5xl rounded-lg bg-gray-50 p-6 shadow-lg">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Control del Estanque: {product.pondIdentifier}</h1>
+        <h1 className="text-xl font-bold text-slate-500">Control del Estanque: {product.pondIdentifier}</h1>
         <button onClick={() => navigate('/producto')} className="flex items-center gap-2 rounded-lg bg-green-500 px-4 py-2 text-white shadow-md transition-colors hover:bg-green-600"><FaArrowLeft /> Volver</button>
       </div>
 
@@ -179,7 +214,6 @@ const PoundControl = () => {
         <div className="flex flex-col gap-4 md:flex-row">
           <ReadOnlyField label="Id Lote:" id="idLote" value={product.name} />
           <ReadOnlyField label="Id Estanque:" id="idEstanque" value={product.pondIdentifier} />
-
           <div className="flex flex-1 items-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
             <label htmlFor="fecha" className="whitespace-nowrap font-medium text-gray-600">Fecha:</label>
             <input 
@@ -192,7 +226,20 @@ const PoundControl = () => {
             />
           </div>
         </div>
-        <EditableField label="Alimento suministrado (gramos)" id="foodSupplied" type="number" value={foodSupplied} onChange={(e) => setFoodSupplied(e.target.value)} />
+        
+        <SelectField
+            label="Alimento Suministrado"
+            id="selectedFood"
+            value={selectedFood}
+            onChange={(e) => setSelectedFood(e.target.value)}
+            disabled={isLoadingSupplies}
+            options={[
+              { value: '', label: isLoadingSupplies ? 'Cargando alimentos...' : 'Seleccione un alimento' },
+              ...foodOptions,
+            ]}
+        />
+
+        <EditableField label="Cantidad suministrado (gramos)" id="foodSupplied" type="number" value={foodSupplied} onChange={(e) => setFoodSupplied(e.target.value)} />
         <EditableField label="Mortalidad retirada" id="mortality" type="number" value={mortality} onChange={(e) => setMortality(e.target.value)} />
       </div>
 
@@ -212,6 +259,39 @@ const PoundControl = () => {
           </div>
         </div>
       </div>
+
+      <div className="mb-6 rounded-lg border-slate-600 bg-white shadow-sm">
+        <button onClick={() => setIsWeightUpdateVisible(prev => !prev)} className="flex w-full items-center justify-between p-4 text-left font-semibold text-gray-700 hover:bg-gray-50">
+          <span className="flex items-center gap-2">
+            <FaWeightHanging />
+            Modificar Peso Promedio
+          </span>
+          {isWeightUpdateVisible ? <FaChevronUp className="text-gray-500" /> : <FaChevronDown className="text-gray-500" />}
+        </button>
+        <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isWeightUpdateVisible ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+          <div className="border-t border-gray-200 p-4">
+            <div className="flex flex-col gap-4 md:flex-row md:items-end">
+              <div className="flex-grow">
+                <EditableField 
+                  label="Nuevo Peso Promedio (gramos)" 
+                  id="newAverageWeight" 
+                  type="number" 
+                  value={newAverageWeight} 
+                  onChange={(e) => setNewAverageWeight(e.target.value)} 
+                />
+              </div>
+              <button 
+                onClick={handleUpdateWeight} 
+                className="rounded-lg bg-orange-500 px-6 py-2.5 font-semibold text-white shadow-sm transition-colors hover:bg-orange-600 disabled:opacity-50"
+                disabled={isUpdatingWeight}
+              >
+                {isUpdatingWeight ? 'Actualizando...' : 'Actualizar Peso'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="mb-6 rounded-lg border-slate-600 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-4">
           <label htmlFor="observations" className="font-medium text-gray-700">Observaciones:</label>
@@ -224,6 +304,7 @@ const PoundControl = () => {
           </div>
         </div>
       </div>
+      
       <div className="mt-6 rounded-lg border-slate-700 bg-white p-4 shadow-sm">
         <h3 className="mb-4 text-lg font-semibold text-gray-700">Historial de Controles</h3>
         <div className="relative mb-4">

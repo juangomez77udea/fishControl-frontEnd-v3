@@ -8,6 +8,7 @@ export interface CreateDailyRecordPayload {
   recordDate?: string; 
   foodSuppliedKg: number;
   mortality: number;
+  foodSupplyId: number;
 }
 
 export interface DailyRecordResponse { 
@@ -19,6 +20,7 @@ export interface DailyRecordResponse {
   mortality: number;
   creationTimestamp: string;
   updateTimestamp: string | null;
+
 }
 
 export type DailyRecord = DailyRecordResponse;

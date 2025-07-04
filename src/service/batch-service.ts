@@ -1,4 +1,5 @@
 import { batchApiInstance } from "../api/batchApi";
+import { productApiInstance } from "../api/productApi";
 // Tipos para la respuesta del backend y el modelo del frontend
 export type BatchResponse = {
   batchId: number;
@@ -127,4 +128,16 @@ export const batchService = {
       throw error;
     }
   },
+
+  async updateWeight(batchId: number, newWeight: number): Promise<void> {
+    try {
+      const payload = { averageWeightPerAnimal: newWeight };
+      // La llamada se hace al product-service, que actúa como proxy
+      await productApiInstance.patch(`/proxy/batches/${batchId}/update-weight`, payload);
+    } catch (error) {
+      console.error(`Error en batchService.updateWeight con ID ${batchId}:`, error);
+      throw error;
+    }
+  },  
+
 };
