@@ -2,14 +2,11 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { toast } from "react-toastify";
 import { isAxiosError } from "axios";
-
-// Dependencias de otros servicios y stores
 import { dailyRecordService, type DailyRecord, type CreateDailyRecordPayload } from "../service/dailyRecord-service";
 import { insumoService } from "../service/InsumoService";
 import { useInsumoStore, type InsumoState } from "./useInsumoStore";
 import type { Insumo } from "../types/insumo";
 
-// 1. Exportar el tipo para que otros archivos puedan usarlo
 export type DailyRecordState = {
   dailyRecordsByBatch: Record<string, DailyRecord[]>;
   isLoading: boolean;
@@ -18,7 +15,6 @@ export type DailyRecordState = {
   createDailyRecord: (payload: CreateDailyRecordPayload) => Promise<DailyRecord | null>;
 };
 
-// 2. Exportar el store para que los componentes puedan usarlo
 export const useDailyRecordStore = create<DailyRecordState>()(
   devtools(
     (set, get) => ({
@@ -26,7 +22,6 @@ export const useDailyRecordStore = create<DailyRecordState>()(
       isLoading: false,
       error: null,
 
-      // Acción para obtener el historial de un lote
       fetchDailyRecordsByBatchId: async (batchId) => {
         if (get().isLoading) return;
         try {
@@ -47,19 +42,15 @@ export const useDailyRecordStore = create<DailyRecordState>()(
         }
       },
 
-      // Acción para crear un nuevo registro diario
       createDailyRecord: async (payload) => {
         try {
           set({ isLoading: true, error: null });
           
-          // Paso A: Crear el registro en la base de datos
           const newRecord = await dailyRecordService.create(payload);
           
           if (newRecord) {
-            // Paso B: Si es exitoso, reducir el stock del insumo
             const updatedInsumo = await insumoService.reduceStock(payload.foodSupplyId, payload.foodSuppliedKg);
 
-            // Paso C: Actualizar el estado en el store de insumos
             useInsumoStore.setState((state: InsumoState) => ({
               insumos: state.insumos.map((insumo: Insumo) => 
                 insumo.id === updatedInsumo.id
@@ -68,7 +59,6 @@ export const useDailyRecordStore = create<DailyRecordState>()(
               )
             }));
 
-            // Paso D: Actualizar el estado local de este store (dailyRecords)
             set((state) => {
               const batchIdStr = newRecord.batchId.toString();
               const existingRecords = state.dailyRecordsByBatch[batchIdStr] || [];
@@ -84,11 +74,10 @@ export const useDailyRecordStore = create<DailyRecordState>()(
             toast.success(`Registro diario creado y stock actualizado.`);
             return newRecord;
           }
-
           throw new Error("La creación del registro diario no devolvió datos.");
         } catch (error) {
           let errorMessage = "Error al crear el registro diario.";
-          if (isAxiosError(error) && error.response?.data) {
+           if (isAxiosError(error) && error.response?.data) {
             const errorData = error.response.data as { message?: string, errors?: { defaultMessage?: string, msg?: string }[] };
             if (typeof errorData.message === 'string') {
               errorMessage = errorData.message;

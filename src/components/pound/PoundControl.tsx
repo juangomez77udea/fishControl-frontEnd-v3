@@ -57,9 +57,7 @@ const LoadingSpinner = () => (
   </div>
 );
 
-
 // ------ COMPONENTE PRINCIPAL ------
-
 const PoundControl = () => {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
@@ -205,14 +203,14 @@ const PoundControl = () => {
         <EditableField label="Mortalidad retirada" id="mortality" type="number" value={mortality} onChange={(e) => setMortality(e.target.value)} />
         
         <div className="flex w-full items-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
-            <label htmlFor="foodSupply" className="whitespace-nowrap font-medium text-gray-600">Insumo Utilizado:</label>
+            <label htmlFor="foodSupply" className="whitespace-nowrap font-medium text-gray-600">Alimento Suministrado:</label>
             <select
                 id="foodSupply"
                 value={foodSupplyId}
                 onChange={(e) => setFoodSupplyId(e.target.value)}
                 className="w-full border-none bg-transparent p-0 text-right text-gray-800 focus:outline-none focus:ring-0"
             >
-                <option value="">-- Seleccione un insumo --</option>
+                <option value=""> Seleccione alimento </option>
                 {foodSupplies.map((supply: Insumo) => (
                     <option key={supply.id} value={supply.id}>
                         {supply.nombre}
@@ -296,6 +294,5 @@ const PoundControl = () => {
     </div>
   );
 };
-
 
 export default PoundControl;

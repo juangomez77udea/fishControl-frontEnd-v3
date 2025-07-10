@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo } from "react"
-import { useForm, Controller } from "react-hook-form"
+import { useEffect, useState, useMemo } from "react";
+import { useForm, Controller } from "react-hook-form";
 import {
   TextField,
   Table,
@@ -10,37 +10,37 @@ import {
   TableRow,
   Radio,
   CircularProgress,
-} from "@mui/material"
-import { useBatchStore } from "../../store/batch-store"
-import { useAuthStore } from "../../store/useAuthStore"
-import { toast } from "react-toastify"
-import SpeciesSelect from "../../components/Species/SpeciesSelect"
-import { useSpecieStore } from "../../store/specie-store"
+} from "@mui/material";
+import { useBatchStore } from "../../store/batch-store";
+import { useAuthStore } from "../../store/useAuthStore";
+import { toast } from "react-toastify";
+import SpeciesSelect from "../../components/Species/SpeciesSelect";
+import { useSpecieStore } from "../../store/specie-store";
 
 type FormValues = {
-  quantityAnimals: number
-  averageWeight: number
-  entryDate: string
-  batchAge: number
-  specieId: string
-}
+  quantityAnimals: number;
+  averageWeight: number;
+  entryDate: string;
+  batchAge: number;
+  specieId: string;
+};
 
 type EnrichedBatch = {
-  id: string
-  specieId: string
-  specieName: string
-  quantityAnimals: number
-  averageWeight: number
-  entryDate: string
-  batchAge: number
-  animalsRemoved: number
-}
+  id: string;
+  specieId: string;
+  specieName: string;
+  quantityAnimals: number;
+  averageWeight: number;
+  entryDate: string;
+  batchAge: number;
+  animalsRemoved: number;
+};
 
 export default function Cultivo() {
-  const { isAuthenticated } = useAuthStore()
-  const { batches, selectedBatchId, isLoading, error, fetchBatches, selectBatch, createBatch, deleteBatch } = useBatchStore()
+  const { isAuthenticated } = useAuthStore();
+  const { batches, selectedBatchId, isLoading, error, fetchBatches, selectBatch, createBatch, deleteBatch } = useBatchStore();
   const { species, fetchSpecies } = useSpecieStore();
-  const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false)
+  const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
 
   const {
     control,
@@ -55,7 +55,7 @@ export default function Cultivo() {
       specieId: "",
     },
     mode: "onBlur",
-  })
+  });
 
   useEffect(() => {
     if (isAuthenticated && !hasAttemptedLoad) {
@@ -63,7 +63,7 @@ export default function Cultivo() {
       fetchSpecies();
       setHasAttemptedLoad(true);
     }
-  }, [isAuthenticated, fetchBatches, fetchSpecies, hasAttemptedLoad])
+  }, [isAuthenticated, fetchBatches, fetchSpecies, hasAttemptedLoad]);
 
   const enrichedBatches = useMemo(() => {
     const speciesMap = new Map(species.map(s => [s.id, s.name]));
@@ -74,27 +74,25 @@ export default function Cultivo() {
   }, [batches, species]);
 
   const onSubmit = (data: FormValues) => {
-
     if (!data.specieId) {
       toast.error("El campo de especie no debe quedar vacío.");
       return;
     }
-
     if (!data.quantityAnimals || data.quantityAnimals <= 0) {
-      toast.error("La cantidad de animales es obligatoria y debe ser mayor a 0")
-      return
+      toast.error("La cantidad de animales es obligatoria y debe ser mayor a 0");
+      return;
     }
     if (!data.averageWeight || data.averageWeight <= 0) {
-      toast.error("El peso promedio por animal es obligatorio y debe ser mayor a 0")
-      return
+      toast.error("El peso promedio por animal es obligatorio y debe ser mayor a 0");
+      return;
     }
     if (!data.entryDate) {
-      toast.error("La fecha de ingreso es obligatoria")
-      return
+      toast.error("La fecha de ingreso es obligatoria");
+      return;
     }
     if (data.batchAge === null || data.batchAge < 0) {
-      toast.error("La edad del lote es obligatoria y no puede ser negativa")
-      return
+      toast.error("La edad del lote es obligatoria y no puede ser negativa");
+      return;
     }
 
     createBatch({
@@ -103,25 +101,26 @@ export default function Cultivo() {
       entryDate: data.entryDate,
       batchAge: data.batchAge,
       specieId: data.specieId,
-    })
-
-    reset()
-  }
+    });
+    reset();
+  };
 
   const handleDeleteBatch = () => {
     if (selectedBatchId) {
-      deleteBatch(selectedBatchId)
+      deleteBatch(selectedBatchId);
     }
-  }
+  };
+
+  const labelStyles = "block text-sm font-bold text-gray-700 bg-blue-100 w-full p-2 rounded-md";
 
   return (
     <div className="flex flex-col gap-6 p-4 max-w-7xl mx-auto">
       <h2 className="text-xl font-bold mb-2 text-gray-800">Gestión Lotes</h2>
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
         <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-          <div className=" flex flex-col gap-2">
-            <label htmlFor="spicie" className="font-medium text-gray-700">Especie</label>
+          
+          <div className="flex flex-col gap-2">
+            <label htmlFor="spicie" className={labelStyles}>Especie</label>
             <Controller
               name="specieId"
               control={control}
@@ -138,8 +137,8 @@ export default function Cultivo() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="quantityAnimals" className="font-medium text-gray-700">
-              Cantidad de animales:
+            <label htmlFor="quantityAnimals" className={labelStyles}>
+              Cantidad de animales
             </label>
             <Controller
               name="quantityAnimals"
@@ -155,8 +154,8 @@ export default function Cultivo() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="averageWeight" className="font-medium text-gray-700">
-              Peso promedio por animal:
+            <label htmlFor="averageWeight" className={labelStyles}>
+              Peso promedio por animal (gr)
             </label>
             <Controller
               name="averageWeight"
@@ -172,7 +171,7 @@ export default function Cultivo() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="entryDate" className="font-medium text-gray-700">
+            <label htmlFor="entryDate" className={labelStyles}>
               Fecha de Ingreso
             </label>
             <Controller
@@ -186,8 +185,8 @@ export default function Cultivo() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="batchAge" className="font-medium text-gray-700">
-              Edad del Lote (días):
+            <label htmlFor="batchAge" className={labelStyles}>
+              Edad del Lote (días)
             </label>
             <Controller
               name="batchAge"
@@ -201,7 +200,8 @@ export default function Cultivo() {
               )}
             />
           </div>
-
+          
+          {/* Este div no tiene una etiqueta que modificar, por lo que se queda igual */}
           <div className="md:col-span-2 lg:col-span-3 flex justify-end gap-3 mt-4">
             <button
               type="submit"
@@ -221,8 +221,9 @@ export default function Cultivo() {
           </div>
         </form>
       </div>
+      {/* ===== FIN DE LA MODIFICACIÓN ===== */}
 
-      {/* Contenedor Inferior - Tabla */}
+      {/* Contenedor Inferior - Tabla (Sin cambios) */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
         {isLoading && !batches.length && (
           <div className="flex justify-center items-center p-8">
@@ -284,5 +285,5 @@ export default function Cultivo() {
         ) : null}
       </div>
     </div>
-  )
+  );
 }

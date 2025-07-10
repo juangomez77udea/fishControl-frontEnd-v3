@@ -158,12 +158,13 @@ const Producto: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 bg-gray-50 rounded-lg shadow-md">
-      {/* FORMULARIO DE REGISTRO  */}
       <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Registrar Producto en Etapa/Estanque</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
+
           <div>
-            <label htmlFor="etapaProducto" className="block text-sm font-medium text-gray-700 mb-1">Etapa del Producto</label>
+            <label htmlFor="etapaProducto" className="block text-sm font-black text-gray-700 bg-blue-100 w-full p-2 rounded-md mb-2">Etapa del Producto</label>
             <select id="etapaProducto" value={etapaSeleccionada} onChange={handleEtapaChange} className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
               <option value="ALEVINAJE">Alevinaje</option>
               <option value="DEDINAJE">Dedinaje</option>
@@ -171,14 +172,16 @@ const Producto: React.FC = () => {
               <option value="ENGORDE">Engorde</option>
             </select>
           </div>
+
           <div>
-            <label htmlFor="idEstanque" className="block text-sm font-medium text-gray-700 mb-1">Identificador de Estanque</label>
+            <label htmlFor="idEstanque" className="block text-sm font-black text-gray-700 bg-blue-100 w-full p-2 rounded-md mb-2">Identificador de Estanque</label>
             <select id="idEstanque" value={idEstanqueSeleccionado} onChange={(e) => setIdEstanqueSeleccionado(e.target.value)} className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
               {generarOpcionesEstanques(etapaSeleccionada).map((estanque) => (<option key={estanque} value={estanque}>{estanque}</option>))}
             </select>
           </div>
+
           <div>
-            <label htmlFor="idLoteOrigen" className="block text-sm font-medium text-gray-700 mb-1">Lote de Origen (Batch ID)</label>
+            <label htmlFor="idLoteOrigen" className="block text-sm font-black text-gray-700 bg-blue-100 w-full p-2 rounded-md mb-2">Lote de Origen (Batch ID)</label>
             <select
               id="idLoteOrigen"
               value={idLoteSeleccionado}
@@ -197,32 +200,32 @@ const Producto: React.FC = () => {
               )}
             </select>
           </div>
+
           <div>
-            <label htmlFor="fechaIngresoEstanque" className="block text-sm font-medium text-gray-700 mb-1">Fecha de ingreso a estanque (Referencial)</label>
+            <label htmlFor="fechaIngresoEstanque" className="block text-sm font-black text-gray-700 bg-blue-100 w-full p-2 rounded-md mb-2">Fecha de ingreso a estanque (Referencial)</label>
             <input id="fechaIngresoEstanque" type="date" value={fechaIngreso} onChange={(e) => setFechaIngreso(e.target.value)} className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
           </div>
         </div>
+
         <div className="mb-6">
-          <label htmlFor="cantidadAnimalesLote" className="block text-sm font-medium text-gray-700 mb-1">Cantidad de animales (del lote de origen)</label>
+          <label htmlFor="cantidadAnimalesLote" className="block text-sm font-black text-gray-700 bg-blue-100 w-full p-2 rounded-md mb-2">Cantidad de animales (del lote de origen)</label>
           <div id="cantidadAnimalesLote" className="w-full p-2 bg-gray-100 border border-gray-300 rounded-md">
             {loteActualParaFormulario ? formatearNumero(loteActualParaFormulario.quantityAnimals) : 'N/A'}
           </div>
         </div>
+
         <div className="mb-6">
-            <label htmlFor="descripcionProducto" className="block text-sm font-medium text-gray-700 mb-1">Descripción del Producto (Opcional)</label>
+            <label htmlFor="descripcionProducto" className="block text-sm font-black text-gray-700 bg-blue-100 w-full p-2 rounded-md mb-2">Descripción del Producto (Opcional)</label>
             <textarea id="descripcionProducto" rows={3} className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={descripcionProducto} onChange={(e) => setDescripcionProducto(e.target.value)} placeholder="Observaciones sobre este producto/etapa. Ej: estado inicial del lote en este estanque."/>
         </div>
+
         <div className="flex space-x-4 justify-end">
           <button onClick={handleRegistrarEnEstanque} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50" disabled={isLoadingProductCreation || !loteActualParaFormulario || isLoadingBatches || isLoadingSpecies }>
             {isLoadingProductCreation ? "Registrando..." : "Registrar en estanque"}
           </button>
-          <button type="button" onClick={handleLimpiarFormulario} className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
-            Cancelar / Limpiar
-          </button>
         </div>
       </div>
       
-      {/* TABLA DE LOTES DISPONIBLES */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Lotes Disponibles</h2>
         <div className="overflow-x-auto">
@@ -274,6 +277,7 @@ const Producto: React.FC = () => {
       </div>
     </div>
   );
+  // ===== FIN DE LA MODIFICACIÓN =====
 };
 
 export default Producto;
