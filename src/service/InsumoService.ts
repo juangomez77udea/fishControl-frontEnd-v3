@@ -1,7 +1,7 @@
 import { supplyApi as api } from "../api/supplyApi"
 import type { Insumo, DraftInsumo, Presentacion, Stage, InsumoType } from "../types/insumo"
 
-// Tipos para mapear los datos del backend
+// El tipo de la respuesta del backend
 type SupplyResponse = {
   id: number
   suppliesName: string
@@ -11,38 +11,28 @@ type SupplyResponse = {
   suppliesDate: string
   type: string
   stage?: string
+  totalWeightKg: number | null
 }
+
+// El tipo que se envía al backend para crear/actualizar
+type SupplyPayload = Omit<SupplyResponse, 'id' | 'totalWeightKg'>;
 
 // Función para convertir la respuesta del backend al formato del frontend
 const mapSupplyToInsumo = (supply: SupplyResponse): Insumo => {
   const validPresentacion = (presentation: string): Presentacion => {
     const validPresentaciones: Presentacion[] = [
-      "40kg",
-      "20kg",
-      "Kilogramos",
-      "Gramo",
-      "Litro",
-      "Mililitro",
-      "Unidad",
-      "Caja",
-      "Paquete",
+      "40kg", "20kg", "Kilogramos", "Gramo", "Litro", "Mililitro", "Unidad", "Caja", "Paquete",
     ]
-
     return validPresentaciones.includes(presentation as Presentacion) ? (presentation as Presentacion) : "Unidad"
   }
 
-  // Validar el tipo de insumo
   const validTypes: InsumoType[] = ["FOOD", "MEDICINE", "EQUIPMENT", "PACKAGING", "DISINFECTANT", "OTHER"]
   const tipoInsumo = validTypes.includes(supply.type as InsumoType) ? (supply.type as InsumoType) : "OTHER"
 
-  // Asegurarse de que los valores numéricos sean números
   const cantidad = typeof supply.suppliesQuantity === "number" ? supply.suppliesQuantity : 0
   const valor = typeof supply.suppliesPrice === "number" ? supply.suppliesPrice : 0
-
-  // Asegurarse de que la fecha esté en formato ISO (UTC)
-  const fechaIngreso = supply.suppliesDate
-    ? new Date(supply.suppliesDate).toISOString().split("T")[0]
-    : new Date().toISOString().split("T")[0]
+  const totalWeightKg = typeof supply.totalWeightKg === 'number' ? supply.totalWeightKg : 0;
+  const fechaIngreso = supply.suppliesDate ? new Date(supply.suppliesDate).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]
 
   return {
     id: supply.id.toString(),
@@ -53,32 +43,27 @@ const mapSupplyToInsumo = (supply: SupplyResponse): Insumo => {
     fechaIngreso: fechaIngreso,
     type: tipoInsumo,
     stage: supply.stage as Stage | undefined, 
+    totalWeightKg: totalWeightKg,
   }
 }
 
-// Función para convertir datos del frontend al formato del backend
-const mapInsumoToSupply = (insumo: DraftInsumo): SupplyResponse => {
+// Función para convertir datos del frontend al formato que espera el backend para CREAR/ACTUALIZAR
+const mapInsumoToSupplyPayload = (insumo: DraftInsumo): SupplyPayload => {
   const cantidad = typeof insumo.cantidad === "string" ? Number.parseFloat(insumo.cantidad) : insumo.cantidad
   const valor = typeof insumo.valor === "string" ? Number.parseFloat(insumo.valor) : insumo.valor
-
-  // Asegurarse de que la fecha esté en formato ISO (UTC)
-  const fechaFormateada = insumo.fechaIngreso
-    ? new Date(insumo.fechaIngreso).toISOString().split("T")[0]
-    : new Date().toISOString().split("T")[0]
+  const fechaFormateada = insumo.fechaIngreso ? new Date(insumo.fechaIngreso).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]
 
   return {
-    id: 0, // El backend generará el ID automáticamente al crear un nuevo insumo
     suppliesName: insumo.nombre,
     presentation: insumo.presentacion,
     suppliesQuantity: cantidad,
     suppliesPrice: valor,
     suppliesDate: fechaFormateada,
-    type: insumo.type, // Enviar el tipo correctamente
-    stage: insumo.stage, // Enviar la etapa correctamente
+    type: insumo.type,
+    stage: insumo.stage,
   }
 }
 
-// Servicio para gestionar los insumos
 export const insumoService = {
   async getAll(): Promise<Insumo[]> {
     try {
@@ -112,7 +97,7 @@ export const insumoService = {
 
   async create(insumo: DraftInsumo): Promise<Insumo> {
     try {
-      const supplyData = mapInsumoToSupply(insumo)
+      const supplyData = mapInsumoToSupplyPayload(insumo)
       const response = await api.post<SupplyResponse>("/supplies", supplyData)
       return mapSupplyToInsumo(response.data)
     } catch (error) {
@@ -123,7 +108,7 @@ export const insumoService = {
 
   async update(id: string, insumo: DraftInsumo): Promise<Insumo> {
     try {
-      const supplyData = mapInsumoToSupply(insumo)
+      const supplyData = mapInsumoToSupplyPayload(insumo)
       const response = await api.put<SupplyResponse>(`/supplies/${id}`, supplyData)
       return mapSupplyToInsumo(response.data)
     } catch (error) {
@@ -140,4 +125,18 @@ export const insumoService = {
       throw error
     }
   },
+  
+  // ---> INICIO DE LA ADICIÓN <---
+  async reduceStock(supplyId: number, amountKg: number): Promise<Insumo> {
+    try {
+      // Usamos api (supplyApi) para llamar al endpoint PATCH
+      const response = await api.patch<SupplyResponse>(`/supplies/${supplyId}/reduce-stock?amountKg=${amountKg}`);
+      // Mapeamos la respuesta del backend al formato de Insumo del frontend
+      return mapSupplyToInsumo(response.data);
+    } catch (error) {
+      console.error("Error al reducir el stock:", error);
+      throw error;
+    }
+  }
+  // ---> FIN DE LA ADICIÓN <---
 }

@@ -1,7 +1,7 @@
 // src/store/batch-store.ts
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { batchService, type Batch, type CreateBatchPayload } from "../service/batch-service"; // Asegúrate que CreateBatchPayload esté aquí si la acción createBatch lo usa
+import { batchService, type Batch, type CreateBatchPayload } from "../service/batch-service";
 import { toast } from "react-toastify";
 import { isAxiosError } from "axios";
 

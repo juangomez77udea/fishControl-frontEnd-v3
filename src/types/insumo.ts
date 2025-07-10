@@ -16,6 +16,7 @@ export type DraftInsumo = {
   fechaIngreso: string; 
   type: InsumoType; 
   stage?: Stage; // Etapa del cultivo (solo aplica para alimentos)
+  totalWeightKg: number;
 };
 
 // Tipo para un insumo completo (con ID)
