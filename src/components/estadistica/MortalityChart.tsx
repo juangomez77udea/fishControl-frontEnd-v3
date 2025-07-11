@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Bar, Line, Pie, Scatter } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -21,7 +21,6 @@ import {
 import { useProductStore, type ProductState } from '../../store/product-store';
 import { useDailyRecordStore, type DailyRecordState } from '../../store/dailyRecord-store';
 import { useStatisticsStore, type StatisticsState } from '../../store/statistics-store';
-import { useBatchStore, type BatchState } from '../../store/batch-store'; // <-- 1. IMPORTAR EL STORE DE LOTES
 
 // Iconos
 import { FaChartBar, FaChartLine, FaChartPie, FaChartArea } from 'react-icons/fa';
@@ -61,14 +60,6 @@ const MortalityChart: React.FC = () => {
   const dailyRecordsByBatch = useDailyRecordStore((state: DailyRecordState) => state.dailyRecordsByBatch);
   const isLoadingRecords = useDailyRecordStore((state: DailyRecordState) => state.isLoading);
 
-  const batches = useBatchStore((state: BatchState) => state.batches);
-  const fetchBatches = useBatchStore((state: BatchState) => state.fetchBatches);
-
-  useEffect(() => {
-    if (batches.length === 0) {
-      fetchBatches();
-    }
-  }, [batches.length, fetchBatches]);
 
   const batchId = useMemo(() => {
     if (!product?.name) return null;
@@ -76,10 +67,15 @@ const MortalityChart: React.FC = () => {
     return match ? parseInt(match[1], 10) : null;
   }, [product]);
 
-  const selectedBatch = useMemo(() => {
-    if (!batchId) return null;
-    return batches.find(b => b.id === batchId.toString());
-  }, [batchId, batches]);
+  
+  const accumulatedMortality = useMemo(() => {
+    if (!batchId || !dailyRecordsByBatch[batchId]) {
+      return 0;
+    }
+    
+    return dailyRecordsByBatch[batchId].reduce((total, record) => total + record.mortality, 0);
+  }, [batchId, dailyRecordsByBatch]);
+
 
   const processedData = useMemo(() => {
     if (!batchId || !dailyRecordsByBatch[batchId]) {
@@ -89,7 +85,7 @@ const MortalityChart: React.FC = () => {
     const recentRecords = sortedRecords.slice(-30);
 
     const labels = recentRecords.map(record =>
-      new Date(record.recordDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })
+      new Date(record.recordDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', timeZone: 'UTC' })
     );
     const mortalityData = recentRecords.map(record => record.mortality);
 
@@ -223,16 +219,15 @@ const MortalityChart: React.FC = () => {
       <div className="flex flex-shrink-0 items-center justify-between">
         <div className="w-1/3"></div>
         <div className="w-1/3 text-center">
-          {selectedBatch && (
+          {product && (
             <div>
               <span className="block text-xs text-gray-500">Mortalidad Acumulada</span>
               <span className="text-xl font-bold text-gray-800">
-                {selectedBatch.animalsRemoved.toLocaleString('es-ES')}
+                {accumulatedMortality.toLocaleString('es-ES')}
               </span>
             </div>
           )}
         </div>
-
 
         <div className="w-1/3 flex justify-end">
           <ChartTypeSelector />

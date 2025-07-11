@@ -118,7 +118,7 @@ const Header: FC<HeaderProps> = ({ onLogout }) => {
         </div>
       </div>
 
-      {/* Menú móvil (visible solo cuando está abierto) */}
+      {/* Menú móvil  */}
       {isMenuOpen && (
         <nav className="md:hidden mt-4 pb-2">
           <div className="grid grid-cols-2 gap-3">

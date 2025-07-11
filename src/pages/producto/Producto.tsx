@@ -29,7 +29,7 @@ const Producto: React.FC = () => {
   const [fechaIngreso, setFechaIngreso] = useState<string>('');
   const [descripcionProducto, setDescripcionProducto] = useState<string>('');
 
-  // ------ SELECTORES DE STORE ------
+  //  SELECTORES DE STORE
   const batchesFromStore = useBatchStore((state: BatchState) => state.batches);
   const fetchBatchesFromStore = useBatchStore((state: BatchState) => state.fetchBatches);
   const isLoadingBatches = useBatchStore((state: BatchState) => state.isLoading);
@@ -60,19 +60,25 @@ const Producto: React.FC = () => {
     return map;
   }, [speciesFromStore]);
 
+
   const lotesParaTablaDisplay: LoteEnTabla[] = useMemo(() => {
     if (!batchesFromStore) return [];
-    return batchesFromStore.map((batch: Batch) => ({
-      ...batch,
-      specieNameResolved: speciesMap.get(batch.specieId) || `ID Especie: ${batch.specieId}`,
-      selected: !!seleccionesTabla[batch.id],
-    }));
+    
+    return [...batchesFromStore]
+      .sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10))
+      .map((batch: Batch) => ({
+        ...batch,
+        specieNameResolved: speciesMap.get(batch.specieId) || `ID Especie: ${batch.specieId}`,
+        selected: !!seleccionesTabla[batch.id],
+      }));
   }, [batchesFromStore, speciesMap, seleccionesTabla]);
+
 
   useEffect(() => {
     if (batchesFromStore && batchesFromStore.length > 0) {
       if (idLoteSeleccionado === '' || !batchesFromStore.some(l => l.id === idLoteSeleccionado)) {
-        setIdLoteSeleccionado(batchesFromStore[0].id);
+        const sortedBatches = [...batchesFromStore].sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
+        setIdLoteSeleccionado(sortedBatches[0].id);
       }
     } else if (batchesFromStore && batchesFromStore.length === 0 && idLoteSeleccionado !== '') {
       setIdLoteSeleccionado('');
@@ -137,7 +143,8 @@ const Producto: React.FC = () => {
     const primerosEstanques = generarOpcionesEstanques('ALEVINAJE');
     setIdEstanqueSeleccionado(primerosEstanques.length > 0 ? primerosEstanques[0] : '');
     if (batchesFromStore && batchesFromStore.length > 0) {
-        setIdLoteSeleccionado(batchesFromStore[0].id);
+        const sortedBatches = [...batchesFromStore].sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
+        setIdLoteSeleccionado(sortedBatches[0].id);
     } else {
         setIdLoteSeleccionado('');
     }
@@ -192,7 +199,7 @@ const Producto: React.FC = () => {
               {isLoadingBatches && (!batchesFromStore || batchesFromStore.length === 0) ? ( <option value="">Cargando lotes...</option>
               ) : (!batchesFromStore || batchesFromStore.length === 0) ? ( <option value="">No hay lotes disponibles</option>
               ) : (
-                batchesFromStore.map((lote: Batch) => (
+                lotesParaTablaDisplay.map((lote: LoteEnTabla) => (
                   <option key={lote.id} value={lote.id}>
                     Lote {lote.id} ({speciesMap.get(lote.specieId) || `ID Especie ${lote.specieId}`})
                   </option>
@@ -228,9 +235,10 @@ const Producto: React.FC = () => {
       
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Lotes Disponibles</h2>
-        <div className="overflow-x-auto">
+        
+        <div className="h-96 overflow-y-auto border-slate-100 rounded-lg">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selección</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Lote (Batch)</th>
@@ -241,10 +249,10 @@ const Producto: React.FC = () => {
                 <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
-            <tbody>
-              {(isLoadingBatches || (isLoadingSpecies && (!lotesParaTablaDisplay || lotesParaTablaDisplay.length === 0))) ? (
-                <tr><td colSpan={7} className="text-center py-4">Cargando datos...</td></tr>
-              ) : (!lotesParaTablaDisplay || lotesParaTablaDisplay.length === 0) ? (
+            <tbody className="bg-white divide-y divide-gray-200">
+              {(isLoadingBatches && lotesParaTablaDisplay.length === 0) ? (
+                <tr><td colSpan={7} className="text-center py-4">Cargando lotes...</td></tr>
+              ) : (lotesParaTablaDisplay.length === 0) ? (
                 <tr><td colSpan={7} className="text-center py-4">No hay lotes (batches) para mostrar.</td></tr>
               ) : (
                 lotesParaTablaDisplay.map((lote: LoteEnTabla) => (
@@ -277,7 +285,6 @@ const Producto: React.FC = () => {
       </div>
     </div>
   );
-  // ===== FIN DE LA MODIFICACIÓN =====
 };
 
 export default Producto;

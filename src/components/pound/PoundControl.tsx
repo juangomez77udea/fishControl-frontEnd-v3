@@ -15,10 +15,9 @@ import type { Insumo } from '../../types/insumo';
 // Iconos
 import { FaArrowLeft, FaChevronDown, FaChevronUp, FaFilter } from 'react-icons/fa';
 
-// Definición de tipo faltante
 type Estanque = string;
 
-// --- FUNCIÓN HELPER PARA LA FECHA ---
+// FUNCIÓN  PARA LA FECHA 
 const getTodayString = () => {
   const today = new Date();
   const year = today.getFullYear();
@@ -27,11 +26,10 @@ const getTodayString = () => {
   return `${year}-${month}-${day}`;
 };
 
-// --- COMPONENTES REUTILIZABLES ---
-const ReadOnlyField: React.FC<{ label: string; id: string; value: string | number }> = ({ label, id, value }) => (
-  <div className="flex flex-1 items-center gap-3 rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 shadow-sm">
+const ReadOnlyField: React.FC<{ label: string; id: string; value: string | number; className?: string, inputClassName?: string }> = ({ label, id, value, className = 'flex-1', inputClassName = '' }) => (
+  <div className={`flex items-center gap-3 rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 shadow-sm ${className}`}>
     <label htmlFor={id} className="whitespace-nowrap font-medium text-gray-600">{label}</label>
-    <input type="text" id={id} name={id} value={value} readOnly className="w-full border-none bg-transparent p-0 text-gray-800 focus:outline-none focus:ring-0" />
+    <input type="text" id={id} name={id} value={value} readOnly className={`w-full border-none bg-transparent p-0 text-gray-800 focus:outline-none focus:ring-0 ${inputClassName}`} />
   </div>
 );
 
@@ -86,7 +84,6 @@ const PoundControl = () => {
   const insumos = useInsumoStore((state) => state.insumos);
   const fetchInsumos = useInsumoStore((state) => state.fetchInsumos);
   
-  // --- LÓGICA DE DATOS ---
   const getBatchIdFromProduct = useCallback(() => {
     if (!product?.name) return null;
     const match = product.name.match(/\(Origen Batch (\d+)\)/);
@@ -97,7 +94,6 @@ const PoundControl = () => {
   
   const foodSupplies = useMemo(() => insumos.filter(insumo => insumo.type === 'FOOD'), [insumos]);
 
-  // --- EFECTOS ---
   useEffect(() => {
     if (!product) fetchProducts();
     if (insumos.length === 0) fetchInsumos();
@@ -111,7 +107,7 @@ const PoundControl = () => {
     }
   }, [batchId, dailyRecordsByBatch, fetchDailyRecordsByBatchId]);
   
-  // --- MANEJADORES DE EVENTOS ---
+  //  MANEJADORES DE EVENTOS 
   const handleClearForm = useCallback(() => {
     setFoodSupplied('');
     setMortality('');
@@ -184,10 +180,22 @@ const PoundControl = () => {
       </div>
 
       <div className="mb-6 flex flex-col gap-4 rounded-lg border-slate-600 bg-white p-4 shadow-sm">
+    
         <div className="flex flex-col gap-4 md:flex-row">
-          <ReadOnlyField label="Id Lote:" id="idLote" value={product.name} />
-          <ReadOnlyField label="Id Estanque:" id="idEstanque" value={product.pondIdentifier} />
-          <div className="flex flex-1 items-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+          <ReadOnlyField 
+            label="Id Lote:" 
+            id="idLote" 
+            value={product.name} 
+            className="md:w-1/2"
+            inputClassName="text-xs"
+          />
+          <ReadOnlyField 
+            label="Id Estanque:" 
+            id="idEstanque" 
+            value={product.pondIdentifier} 
+            className="md:w-1/4"
+          />
+          <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 md:w-1/4"> {/* <-- Asigna 25% del ancho */}
             <label htmlFor="fecha" className="whitespace-nowrap font-medium text-gray-600">Fecha:</label>
             <input 
               type="date" 
@@ -199,6 +207,7 @@ const PoundControl = () => {
             />
           </div>
         </div>
+
         <EditableField label="Alimento suministrado (gramos)" id="foodSupplied" type="number" value={foodSupplied} onChange={(e) => setFoodSupplied(e.target.value)} />
         <EditableField label="Mortalidad retirada" id="mortality" type="number" value={mortality} onChange={(e) => setMortality(e.target.value)} />
         

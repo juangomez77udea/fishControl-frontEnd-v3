@@ -114,7 +114,7 @@ const FoodSupply: React.FC = () => {
   return (
     <div className="flex h-full flex-col rounded-lg bg-white p-4 shadow-md gap-4">
       <h2 className="w-full bg-blue-300 p-2 text-lg font-semibold text-gray-700 rounded-md">
-        Insumos de Alimento en Stock
+        Alimento en Stock
       </h2>
       <div className="relative w-full">
         <input
